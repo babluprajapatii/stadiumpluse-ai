@@ -4,6 +4,7 @@ import { ThemeProvider } from "next-themes";
 import "./globals.css";
 
 import { AppProvider } from "@/providers/AppContext";
+import { AuthProvider } from "@/providers/AuthProvider";
 
 const outfit = Outfit({
   variable: "--font-sans",
@@ -34,9 +35,11 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange={false}>
-          <AppProvider>
-            {children}
-          </AppProvider>
+          <AuthProvider>
+            <AppProvider>
+              {children}
+            </AppProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
