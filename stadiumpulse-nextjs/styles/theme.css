@@ -1,6 +1,8 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  --font-sans: 'Outfit', system-ui, -apple-system, sans-serif;
+  --font-mono: 'DM Mono', 'Courier New', monospace;
   --font-size: 16px;
   --background: #F8FAFC;
   --foreground: #0F172A;
@@ -217,3 +219,51 @@
     }
   }
 }
+
+/* Accessibility Settings overrides */
+.high-contrast {
+  --background: #FFFFFF !important;
+  --foreground: #000000 !important;
+  --card: #FFFFFF !important;
+  --popover: #FFFFFF !important;
+  --border: #000000 !important;
+  --primary: #0000FF !important;
+  --primary-foreground: #FFFFFF !important;
+  --muted-foreground: #000000 !important;
+  --accent: #E0E0E0 !important;
+  --accent-foreground: #000000 !important;
+}
+
+.dark.high-contrast {
+  --background: #000000 !important;
+  --foreground: #FFFFFF !important;
+  --card: #000000 !important;
+  --popover: #000000 !important;
+  --border: #FFFFFF !important;
+  --primary: #00FFFF !important;
+  --primary-foreground: #000000 !important;
+  --muted-foreground: #FFFFFF !important;
+  --accent: #333333 !important;
+  --accent-foreground: #FFFFFF !important;
+}
+
+/* Reduced Motion Override */
+.reduced-motion, .reduced-motion * {
+  animation-delay: 0s !important;
+  animation-duration: 0s !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0s !important;
+  scroll-behavior: auto !important;
+}
+
+/* Font scale adjustments */
+.text-scale-small {
+  font-size: 14px !important;
+}
+.text-scale-medium {
+  font-size: 16px !important;
+}
+.text-scale-large {
+  font-size: 18px !important;
+}
+

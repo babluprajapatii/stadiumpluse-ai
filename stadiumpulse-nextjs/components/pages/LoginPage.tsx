@@ -1,13 +1,55 @@
 import { useState } from "react";
-import { Zap, ArrowRight, CheckCircle, ChevronLeft } from "lucide-react";
+import { Zap, ArrowRight, CheckCircle, ChevronLeft, AlertTriangle } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { cn } from "../ui/utils";
-import type { Navigate } from "@/types";
+import type { Navigate, PageId } from "@/types";
+import { useAuth } from "@/providers/AuthProvider";
 
 export function LoginPage({ navigate }: { navigate: Navigate }) {
   const [role, setRole] = useState("fan");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const { login, oauthLogin } = useAuth();
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg("");
+    if (!email.trim() || !password) {
+      setErrorMsg("Please enter both your email address and password.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const loggedUser = await login(email, password, rememberMe);
+      navigate(loggedUser.role as PageId);
+    } catch (err: unknown) {
+      const error = err as Error;
+      setErrorMsg(error.message || "Invalid email or password.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOAuthLogin = async () => {
+    setErrorMsg("");
+    setLoading(true);
+    try {
+      const loggedUser = await oauthLogin(`${role}_oauth@stadium.com`, `${role.toUpperCase()} User`, role);
+      navigate(loggedUser.role as PageId);
+    } catch (err: unknown) {
+      const error = err as Error;
+      setErrorMsg(error.message || "OAuth login failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-full flex flex-col md:flex-row">
       <div className="hidden md:flex md:w-1/2 bg-sidebar flex-col items-center justify-center p-12 min-h-full">
@@ -38,51 +80,106 @@ export function LoginPage({ navigate }: { navigate: Navigate }) {
         <div className="w-full max-w-sm">
           <button
             onClick={() => navigate("landing")}
-            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-8 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+            disabled={loading}
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-8 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded disabled:opacity-50 cursor-pointer"
           >
             <ChevronLeft size={14} aria-hidden="true" /> Back to home
           </button>
           <h2 className="text-xl font-bold text-foreground mb-1">Sign in</h2>
           <p className="text-sm text-muted-foreground mb-7">Select your role to continue.</p>
-          <div className="mb-6">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium mb-2.5">I am a…</p>
-            <div className="flex flex-wrap gap-2" role="group" aria-label="Select your role">
-              {["Fan", "Volunteer", "Security", "Organizer", "Operator"].map(r => {
-                const on = role === r.toLowerCase();
-                return (
-                  <button
-                    key={r}
-                    onClick={() => setRole(r.toLowerCase())}
-                    aria-pressed={on}
-                    className={cn(
-                      "px-3.5 py-1.5 text-xs rounded-full border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                      on
-                        ? "bg-primary text-white border-primary"
-                        : "bg-background text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
-                    )}
-                  >
-                    {r}
-                  </button>
-                );
-              })}
+
+          {errorMsg && (
+            <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 text-destructive text-xs rounded-xl flex items-start gap-2" role="alert">
+              <AlertTriangle size={14} className="shrink-0 mt-0.5" />
+              <span>{errorMsg}</span>
             </div>
-          </div>
-          <div className="space-y-4 mb-5">
-            <div className="space-y-1.5">
-              <Label htmlFor="email">Email address</Label>
-              <Input id="email" type="email" defaultValue="jamie@stadium.com" autoComplete="email" />
-            </div>
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <a href="#" className="text-[11px] text-primary hover:underline">Forgot password?</a>
+          )}
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="mb-6">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium mb-2.5">I am a…</p>
+              <div className="flex flex-wrap gap-2" role="group" aria-label="Select your role">
+                {["Fan", "Volunteer", "Security", "Organizer", "Operator"].map(r => {
+                  const on = role === r.toLowerCase();
+                  return (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setRole(r.toLowerCase())}
+                      disabled={loading}
+                      aria-pressed={on}
+                      className={cn(
+                        "px-3.5 py-1.5 text-xs rounded-full border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 cursor-pointer",
+                        on
+                          ? "bg-primary text-white border-primary"
+                          : "bg-background text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
+                      )}
+                    >
+                      {r}
+                    </button>
+                  );
+                })}
               </div>
-              <Input id="password" type="password" defaultValue="••••••••" autoComplete="current-password" />
             </div>
-          </div>
-          <Button className="w-full gap-2" size="lg" onClick={() => navigate("fan")}>
-            Sign in <ArrowRight size={16} aria-hidden="true" />
-          </Button>
+            
+            <div className="space-y-4 mb-5">
+              <div className="space-y-1.5">
+                <Label htmlFor="email">Email address</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  autoComplete="email"
+                  placeholder="alex@stadium.com"
+                  disabled={loading}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate("forgot-password" as PageId);
+                    }}
+                    className="text-[11px] text-primary hover:underline"
+                  >
+                    Forgot password?
+                  </a>
+                </div>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 pt-1 pb-2">
+              <input
+                id="remember"
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                disabled={loading}
+                className="rounded border-border text-primary focus:ring-ring cursor-pointer"
+              />
+              <Label htmlFor="remember" className="text-xs text-muted-foreground font-normal cursor-pointer select-none">
+                Remember me
+              </Label>
+            </div>
+
+            <Button type="submit" className="w-full gap-2" size="lg" disabled={loading}>
+              {loading ? "Signing in..." : "Sign in"} <ArrowRight size={16} aria-hidden="true" />
+            </Button>
+          </form>
+
           <div className="flex items-center gap-3 my-5">
             <div className="flex-1 border-t border-border" />
             <span className="text-[10px] text-muted-foreground">or continue with</span>
@@ -110,7 +207,7 @@ export function LoginPage({ navigate }: { navigate: Navigate }) {
                 ),
               },
             ].map(({ name, svg }) => (
-              <Button key={name} variant="outline" className="gap-2" onClick={() => navigate("fan")}>
+              <Button key={name} variant="outline" className="gap-2" disabled={loading} onClick={handleOAuthLogin}>
                 {svg}{name}
               </Button>
             ))}
@@ -120,7 +217,10 @@ export function LoginPage({ navigate }: { navigate: Navigate }) {
             <a
               href="#"
               className="text-primary font-semibold hover:underline"
-              onClick={e => { e.preventDefault(); navigate("fan"); }}
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("register" as PageId);
+              }}
             >
               Sign up free
             </a>

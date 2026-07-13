@@ -2,24 +2,43 @@
 
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { Menu, Zap } from "lucide-react";
+import { Menu } from "lucide-react";
 import { ThemeBtn } from "../shared/ThemeBtn";
 import { Sidebar } from "./Sidebar";
-import { FlowBar } from "./FlowBar";
 import { EmergencyMode, EmergencyTrigger } from "../emergency-mode";
 import { useApp } from "@/providers/AppContext";
-import { NAV, FLOW } from "@/types";
-import type { PageId } from "@/types";
+import { useAuth } from "@/providers/AuthProvider";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { NotificationBell } from "../shared/NotificationBell";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const activePage = (pathname === "/" ? "landing" : pathname.split("/").pop() || "landing") as PageId;
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { emergency, setEmergency } = useApp();
+  const { user } = useAuth();
 
-  const current  = NAV.find(n => n.id === activePage);
-  const inFlow   = FLOW.includes(activePage);
-  const flowIdx  = FLOW.indexOf(activePage);
+  const getRoleLabel = () => {
+    if (!user) return "StadiumPulse";
+    const r = user.role;
+    // Capitalize role and add suffix
+    const roleCapitalized = r.charAt(0).toUpperCase() + r.slice(1);
+    if (r === "fan" || r === "volunteer") {
+      return `${roleCapitalized} Portal`;
+    }
+    return `${roleCapitalized} Dashboard`;
+  };
+
+  const getInitials = () => {
+    if (!user) return "U";
+    if (user.name) {
+      return user.name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase();
+    }
+    return user.email.charAt(0).toUpperCase();
+  };
 
   return (
     <div className="flex h-screen bg-sidebar overflow-hidden">
@@ -36,7 +55,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       )}
 
       <Sidebar
-        activePage={activePage}
         sidebarOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
@@ -46,7 +64,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-1.5 rounded-lg text-muted-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="lg:hidden p-1.5 rounded-lg text-muted-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
               aria-label={sidebarOpen ? "Close navigation" : "Open navigation"}
               aria-expanded={sidebarOpen}
               aria-controls="app-sidebar"
@@ -54,23 +72,28 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Menu size={17} aria-hidden="true" />
             </button>
             <div className="flex items-center gap-2">
-              {current && <current.Icon size={15} className="text-muted-foreground hidden sm:block" aria-hidden="true" />}
-              <span className="font-semibold text-sm text-foreground">{current?.label}</span>
+              <span className="font-semibold text-sm text-foreground">{getRoleLabel()}</span>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <EmergencyTrigger onClick={() => setEmergency(true)} />
-            {inFlow && (
-              <div className="hidden sm:flex items-center gap-1.5 text-[10px] text-muted-foreground bg-muted rounded-full px-3 py-1">
-                <Zap size={10} className="text-primary" aria-hidden="true" />
-                Step {flowIdx + 1} / {FLOW.length}
-              </div>
-            )}
+            
+            <NotificationBell />
+
             <ThemeBtn />
+
+            {user && (
+              <Avatar className="w-7 h-7">
+                {user.avatar && (
+                  <AvatarImage src={user.avatar} alt={`${user.name}'s profile photo`} className="object-cover" />
+                )}
+                <AvatarFallback className="text-[10px] bg-primary text-primary-foreground font-bold select-none">
+                  {getInitials()}
+                </AvatarFallback>
+              </Avatar>
+            )}
           </div>
         </div>
-
-        {inFlow && <FlowBar current={activePage} />}
 
         <div className="flex-1 overflow-auto bg-background">
           <div key={pathname} className="min-h-full page-enter">

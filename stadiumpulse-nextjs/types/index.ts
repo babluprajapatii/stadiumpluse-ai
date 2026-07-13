@@ -4,7 +4,7 @@ import {
 } from "lucide-react";
 
 export type PageId =
-  | "landing" | "login" | "fan" | "volunteer"
+  | "landing" | "login" | "register" | "forgot-password" | "reset-password" | "profile" | "settings" | "notifications" | "verify-email" | "fan" | "volunteer"
   | "security" | "organizer" | "operator" | "ai"
   | "accessibility" | "feature" | "result";
 

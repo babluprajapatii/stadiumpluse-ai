@@ -1,4 +1,4 @@
-import { Zap, ArrowRight, Star, Shield, Activity } from "lucide-react";
+import { Zap, ArrowRight, Star, Shield, Activity, CheckCircle } from "lucide-react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { LiveBadge } from "../ui/live-badge";
@@ -6,6 +6,14 @@ import { Surface } from "../shared/Surface";
 import type { Navigate } from "@/types";
 
 export function LandingPage({ navigate }: { navigate: Navigate }) {
+  const handleScroll = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <div className="bg-background min-h-full">
       <nav className="sticky top-0 z-40 bg-card/90 backdrop-blur-md border-b border-border px-5 py-3.5 flex items-center justify-between">
@@ -19,7 +27,14 @@ export function LandingPage({ navigate }: { navigate: Navigate }) {
         <div className="flex items-center gap-2">
           <div className="hidden md:flex items-center gap-5 mr-3">
             {["Features", "Pricing", "Docs", "About"].map(l => (
-              <a key={l} href="#" className="text-xs text-muted-foreground hover:text-foreground transition-colors">{l}</a>
+              <a
+                key={l}
+                href={`#${l.toLowerCase()}`}
+                onClick={(e) => handleScroll(e, l.toLowerCase())}
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {l}
+              </a>
             ))}
           </div>
           <Button variant="ghost" size="sm" onClick={() => navigate("login")}>Sign in</Button>
@@ -86,8 +101,8 @@ export function LandingPage({ navigate }: { navigate: Navigate }) {
         </div>
       </section>
 
-      <section className="px-5 py-14 md:px-12 max-w-5xl mx-auto">
-        <p className="text-xs text-primary font-semibold uppercase tracking-widest mb-2">Platform</p>
+      <section id="features" className="px-5 py-14 md:px-12 max-w-5xl mx-auto scroll-mt-20">
+        <p className="text-xs text-primary font-semibold uppercase tracking-widest mb-2">Features</p>
         <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-8">Built for every role.</h2>
         <div className="grid md:grid-cols-3 gap-4">
           {[
@@ -101,6 +116,96 @@ export function LandingPage({ navigate }: { navigate: Navigate }) {
               </div>
               <h3 className="font-semibold text-sm text-foreground mb-1.5">{title}</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+            </Surface>
+          ))}
+        </div>
+      </section>
+
+      <section id="pricing" className="px-5 py-14 md:px-12 max-w-5xl mx-auto border-t border-border scroll-mt-20">
+        <p className="text-xs text-primary font-semibold uppercase tracking-widest mb-2">Pricing</p>
+        <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">Flexible plans for any tournament size.</h2>
+        <p className="text-muted-foreground text-xs md:text-sm leading-relaxed mb-8 max-w-xl">
+          Scale operations from local matches to world championship finals with adaptive pricing models.
+        </p>
+        <div className="grid md:grid-cols-2 gap-6">
+          <Surface className="flex flex-col justify-between p-6">
+            <div>
+              <h3 className="font-bold text-base text-foreground mb-1">Fan & Volunteer Core</h3>
+              <p className="text-xs text-muted-foreground mb-4">Essential tools for stadium entry and volunteering.</p>
+              <div className="text-3xl font-bold text-foreground mb-6">Free</div>
+              <ul className="space-y-3 mb-6">
+                {["Live wayfinding maps", "Digital concession ordering", "Volunteer duty rosters", "Standard emergency alerts"].map(item => (
+                  <li key={item} className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <CheckCircle size={14} className="text-success shrink-0" aria-hidden="true" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <Button variant="outline" className="w-full" onClick={() => navigate("login")}>Get Started</Button>
+          </Surface>
+
+          <Surface className="flex flex-col justify-between p-6 border-primary/30 bg-primary/5">
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <h3 className="font-bold text-base text-foreground">Intelligent Command</h3>
+                <Badge>Recommended</Badge>
+              </div>
+              <p className="text-xs text-muted-foreground mb-4">GenAI-powered decision making and command center orchestration.</p>
+              <div className="text-3xl font-bold text-foreground mb-6">Contact Sales</div>
+              <ul className="space-y-3 mb-6">
+                {["All Basic features", "GenAI operation recommendations", "Real-time crowd heatmaps", "Automated incident dispatching", "99.9% uptime SLA"].map(item => (
+                  <li key={item} className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <CheckCircle size={14} className="text-primary shrink-0" aria-hidden="true" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <Button className="w-full" onClick={() => navigate("login")}>Contact Operations</Button>
+          </Surface>
+        </div>
+      </section>
+
+      <section id="docs" className="px-5 py-14 md:px-12 max-w-5xl mx-auto border-t border-border scroll-mt-20">
+        <p className="text-xs text-primary font-semibold uppercase tracking-widest mb-2">Docs</p>
+        <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">Developer & Operational Reference</h2>
+        <p className="text-muted-foreground text-xs md:text-sm leading-relaxed mb-8 max-w-xl">
+          Integrate StadiumPulse AI core endpoints, dispatch loops, and AI agent frameworks.
+        </p>
+        <div className="grid md:grid-cols-2 gap-4">
+          {[
+            { title: "Command Center SDK", desc: "Integrate camera feeds, crowd counts, and localized gate traffic estimators directly into the AI core." },
+            { title: "Incident Dispatch Protocol", desc: "Configure automated notification channels for security teams and local emergency dispatches." },
+            { title: "Fan Concessions API", desc: "Sync stadium food menus, retrieve wait-time estimations, and execute POS queue handshakes." },
+            { title: "Accessibility Standards", desc: "Compliance workflows and screen-reader assets for inclusive stadium wayfinding." },
+          ].map(doc => (
+            <Surface key={doc.title} className="p-4 hover:border-primary/20 transition-colors">
+              <h3 className="font-semibold text-xs text-foreground mb-1">{doc.title}</h3>
+              <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">{doc.desc}</p>
+              <a href="#" className="text-[10px] text-primary font-medium hover:underline inline-flex items-center gap-1" onClick={e => e.preventDefault()}>
+                Read guides <ArrowRight size={10} aria-hidden="true" />
+              </a>
+            </Surface>
+          ))}
+        </div>
+      </section>
+
+      <section id="about" className="px-5 py-14 md:px-12 max-w-5xl mx-auto border-t border-border scroll-mt-20">
+        <p className="text-xs text-primary font-semibold uppercase tracking-widest mb-2">About</p>
+        <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">Empowering the world&apos;s grandest stages.</h2>
+        <p className="text-muted-foreground text-xs md:text-sm leading-relaxed mb-8 max-w-xl">
+          StadiumPulse AI was born out of a mission to ensure modern sports events are secure, accessible, and delight every visitor.
+        </p>
+        <div className="grid md:grid-cols-3 gap-4">
+          {[
+            { label: "Our Mission", text: "Providing real-time operational safety and inclusive assistance tools to fans and crews alike." },
+            { label: "GenAI Intelligence", text: "Harnessing deep neural prediction systems to coordinate evacuations and guide gate entry." },
+            { label: "FIFA 2026 Ready", text: "Fully tested and architected to support concurrent high-capacity stadium crowd flows." },
+          ].map(item => (
+            <Surface key={item.label} className="p-4 bg-muted/40">
+              <h3 className="font-bold text-xs text-foreground mb-1.5">{item.label}</h3>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">{item.text}</p>
             </Surface>
           ))}
         </div>
