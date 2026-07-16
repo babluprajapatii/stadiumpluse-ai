@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ThemeProvider } from "next-themes";
+import { ThemeProvider } from "@/providers/ThemeProvider";
 import "./globals.css";
 
 import { AppProvider } from "@/providers/AppContext";
@@ -21,8 +21,29 @@ export default function RootLayout({
       className="h-full antialiased"
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange={false}>
+      <head>
+        <script
+          id="theme-initializer"
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('theme') || 'system';
+                  var isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                  if (isDark) {
+                    document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
+      <body className="min-h-full flex flex-col bg-background text-foreground" suppressHydrationWarning>
+        <ThemeProvider>
           <AuthProvider>
             <AppProvider>
               {children}

@@ -20,28 +20,38 @@ interface AppContextType {
   setAccessibilitySettings: React.Dispatch<React.SetStateAction<AccessibilitySettings>>;
 }
 
+/** Safe defaults that match the server-rendered HTML. */
+const DEFAULT_ACCESSIBILITY: AccessibilitySettings = {
+  highContrast: false,
+  largeText: false,
+  reducedMotion: false,
+  voiceNav: false,
+  screenReader: false,
+  signLanguage: false,
+};
+
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [emergency, setEmergency] = useState(false);
   const { user } = useAuth();
 
-  const [accessibilitySettings, setAccessibilitySettings] = useState<AccessibilitySettings>({
-    highContrast: false,
-    largeText: true,
-    reducedMotion: false,
-    voiceNav: false,
-    screenReader: true,
-    signLanguage: false,
-  });
+  /**
+   * HYDRATION FIX: Start with safe defaults that match the server output.
+   * The real values are loaded from localStorage/Supabase inside useEffect
+   * (client-side only, after hydration is complete).
+   */
+  const [accessibilitySettings, setAccessibilitySettings] = useState<AccessibilitySettings>(
+    DEFAULT_ACCESSIBILITY
+  );
 
   useEffect(() => {
     if (user) {
-      // 1. Synchronously load local storage cached settings to avoid layouts shift
+      // 1. Load cached settings immediately (synchronous, no round-trip)
       const initial = SettingsService.getLocalSettings(user.id);
+      // Apply CSS classes to <html> — SettingsService handles this safely
       SettingsService.applySettings(initial);
-      
-      // Keep legacy accessibilitySettings object partially in sync
+
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setAccessibilitySettings((prev) => ({
         ...prev,
@@ -52,28 +62,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }));
 
       // 2. Asynchronously fetch latest from database and apply
-      SettingsService.getSettings(user.id).then((settings) => {
-        SettingsService.applySettings(settings);
-        setAccessibilitySettings((prev) => ({
-          ...prev,
-          highContrast: settings.accessibility.highContrast,
-          reducedMotion: settings.accessibility.reducedMotion,
-          screenReader: settings.accessibility.screenReader,
-          largeText: settings.accessibility.fontSize === "large",
-        }));
-      }).catch(() => {
-        // Ignore background fetch failures
-      });
+      SettingsService.getSettings(user.id)
+        .then((settings) => {
+          SettingsService.applySettings(settings);
+          setAccessibilitySettings((prev) => ({
+            ...prev,
+            highContrast: settings.accessibility.highContrast,
+            reducedMotion: settings.accessibility.reducedMotion,
+            screenReader: settings.accessibility.screenReader,
+            largeText: settings.accessibility.fontSize === "large",
+          }));
+        })
+        .catch(() => {
+          // Ignore background fetch failures
+        });
     } else {
+      // Reset to defaults when logged out
       SettingsService.applySettings(DEFAULT_SETTINGS);
-      setAccessibilitySettings({
-        highContrast: false,
-        largeText: true,
-        reducedMotion: false,
-        voiceNav: false,
-        screenReader: true,
-        signLanguage: false,
-      });
+      setAccessibilitySettings(DEFAULT_ACCESSIBILITY);
     }
   }, [user]);
 
@@ -86,9 +92,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setAccessibilitySettings,
       }}
     >
-      <div className={accessibilitySettings.highContrast ? "high-contrast" : ""}>
-        {children}
-      </div>
+      {/*
+        HYDRATION FIX: Removed the <div className={accessibilitySettings.highContrast ? "high-contrast" : ""}> wrapper.
+        It caused a hydration mismatch because:
+          - Server renders: <div class="">
+          - Client may read highContrast=true from localStorage before render
+        The "high-contrast" class is correctly applied to <html> by
+        SettingsService.applySettings() in the useEffect above.
+      */}
+      {children}
     </AppContext.Provider>
   );
 }

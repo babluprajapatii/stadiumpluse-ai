@@ -189,6 +189,22 @@ export class SettingsService {
     if (typeof window === "undefined") return;
     const html = document.documentElement;
 
+    // Apply Light/Dark/System theme
+    const theme = settings.general.theme;
+    if (theme === "dark") {
+      html.classList.add("dark");
+    } else if (theme === "light") {
+      html.classList.remove("dark");
+    } else {
+      // system theme
+      const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (isDark) {
+        html.classList.add("dark");
+      } else {
+        html.classList.remove("dark");
+      }
+    }
+
     // Apply High Contrast
     if (settings.accessibility.highContrast) {
       html.classList.add("high-contrast");

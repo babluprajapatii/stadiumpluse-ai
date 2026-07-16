@@ -42,28 +42,21 @@ interface AuthContextType {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-/** Session storage key. Only stores non-sensitive display data. */
 const SESSION_KEY = "stadium_session";
-
-/** Cookie name for middleware-based route protection. */
 const SESSION_COOKIE = "stadium_session";
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Storage helpers ──────────────────────────────────────────────────────────
 
-/** Stores a minimal, non-sensitive user snapshot for session persistence. */
 function persistSession(user: User, maxAge: number): void {
-  // We only store the role, id, name, and email (no avatar/bio/org for privacy)
   const snapshot: Partial<User> = { id: user.id, email: user.email, name: user.name, role: user.role };
   try {
     localStorage.setItem(SESSION_KEY, JSON.stringify(snapshot));
-    // Cookie is used by middleware for server-side route protection only
     document.cookie = `${SESSION_COOKIE}=${encodeURIComponent(JSON.stringify({ role: user.role }))}; path=/; max-age=${maxAge}; SameSite=Lax`;
   } catch {
-    // Storage may be unavailable (e.g. private browsing with restrictions)
+    // Storage unavailable (e.g. private browsing)
   }
 }
 
-/** Clears all persisted session data. */
 function clearSession(): void {
   try {
     localStorage.removeItem(SESSION_KEY);
@@ -74,9 +67,13 @@ function clearSession(): void {
   }
 }
 
-/** Reads the locally cached user snapshot (for fast initial hydration only). */
+/**
+ * Reads cached user from localStorage — only safe to call AFTER hydration.
+ * Never call this at module-level or inside useState initializer because
+ * the server cannot access localStorage and the result will differ,
+ * causing a hydration mismatch.
+ */
 function readCachedUser(): User | null {
-  if (typeof window === "undefined") return null;
   try {
     const raw = localStorage.getItem(SESSION_KEY);
     if (!raw) return null;
@@ -93,7 +90,13 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(readCachedUser);
+  /**
+   * HYDRATION FIX: Always initialise user as null (matches SSR output).
+   * We load the localStorage cache inside useEffect — which only runs
+   * client-side AFTER the first render — so server and client first-render
+   * are always identical (user = null, sidebar shows nothing).
+   */
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
@@ -123,15 +126,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           : undefined,
       };
       setUser(hydrated);
-      persistSession(hydrated, 604800); // 7-day cookie
+      persistSession(hydrated, 604800);
     }
   }, []);
 
-  // Listen to Supabase authentication state changes
   useEffect(() => {
     let mounted = true;
 
-    // 1. Initial session check
+    /**
+     * Step 1: Immediately restore the locally-cached user so the sidebar
+     * appears populated without waiting for a Supabase round-trip.
+     * This runs AFTER the first render (hydration is complete), so
+     * the state update is safe and will not cause a mismatch.
+     */
+    const cached = readCachedUser();
+    if (cached && mounted) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setUser(cached);
+    }
+
+    /**
+     * Step 2: Verify the cached user with Supabase and hydrate fresh data.
+     * If there is no active session, clear local state.
+     */
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
       if (session?.user) {
@@ -139,21 +156,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (mounted) setIsLoading(false);
         });
       } else {
+        // No active session — clear any stale local cache
         setUser(null);
         clearSession();
         setIsLoading(false);
       }
     });
 
-    // 2. Subscribe to auth state changes (handles login/logout/token refresh)
+    /**
+     * Step 3: Subscribe to future auth state changes
+     * (login, logout, token refresh).
+     */
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
 
       if (session?.user) {
-        // Re-hydrate profile on sign-in or token refresh
         if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
           hydrateProfile(session.user.id, session.user.email ?? "").catch(() => {
-            // Profile fetch failed — keep the current user state
+            // Keep current user state on profile fetch failure
           });
         }
       } else if (event === "SIGNED_OUT") {
@@ -186,7 +206,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
 
       setUser(loggedUser);
-      // rememberMe: 7 days vs 1 day
       persistSession(loggedUser, rememberMe ? 604800 : 86400);
       return loggedUser;
     } finally {
@@ -197,7 +216,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const oauthLogin = useCallback(async (email: string, name: string, role: string): Promise<User> => {
     setIsLoading(true);
     try {
-      // OAuth simulation: attempt sign-in; register if user doesn't exist
       let authUser: Awaited<ReturnType<typeof AuthService.authenticate>>;
       const simulatedPassword = "OauthSimulatedPass123!";
 
@@ -253,7 +271,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await AuthService.logout(user?.id);
     } catch {
-      // Non-blocking — always clear local state
+      // Non-blocking
     }
     setUser(null);
     clearSession();

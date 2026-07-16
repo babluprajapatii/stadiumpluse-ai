@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/providers/ThemeProvider";
 import { Key, LogOut, Trash2, Bell, AlertTriangle, CheckCircle, Smartphone, Globe, Eye, RefreshCw } from "lucide-react";
 import { Label } from "../ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
