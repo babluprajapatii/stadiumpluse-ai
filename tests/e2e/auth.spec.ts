@@ -15,6 +15,7 @@ test.describe("StadiumPulse AI E2E Flows", () => {
           user: {
             id: "test-user-uuid",
             email: "fan@stadium.com",
+            email_confirmed_at: "2026-07-16T12:00:00Z",
             user_metadata: { role: "fan", name: "Jamie O." },
           },
         }),
@@ -28,6 +29,7 @@ test.describe("StadiumPulse AI E2E Flows", () => {
         body: JSON.stringify({
           id: "test-user-uuid",
           email: "newuser@stadium.com",
+          email_confirmed_at: "2026-07-16T12:00:00Z",
           user_metadata: { role: "fan", name: "New User" },
         }),
       });
@@ -101,7 +103,7 @@ test.describe("StadiumPulse AI E2E Flows", () => {
     await expect(page).toHaveTitle(/StadiumPulse AI/i);
 
     // Verify presence of CTA links
-    const getStartedLink = page.getByRole("link", { name: /Get Started/i });
+    const getStartedLink = page.getByRole("link", { name: /Get Started/i }).first();
     await expect(getStartedLink).toBeVisible();
 
     // 2. Go to Register Page
@@ -125,7 +127,7 @@ test.describe("StadiumPulse AI E2E Flows", () => {
 
     // Click Proceed to Sign In
     await page.click("text=Proceed to Sign In");
-    await expect(page.url()).toContain("/login");
+    await expect(page).toHaveURL(/\/login/);
 
     // 3. Login Flow
     await page.fill('input[id="email"]', "fan@stadium.com");

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { NotificationsService, NotificationItem } from "@/services/notifications";
+import { NotificationsService } from "@/services/notifications";
 
 // Mock Supabase client
 vi.mock("@/lib/supabase", () => ({

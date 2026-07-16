@@ -9,9 +9,9 @@ const mockSelect = vi.fn();
 vi.mock("@/lib/supabase", () => ({
   supabase: {
     auth: {
-      signInWithPassword: (...args: any[]) => mockSignIn(...args),
-      signUp: (...args: any[]) => mockSignUp(...args),
-      signOut: (...args: any[]) => mockSignOut(...args),
+      signInWithPassword: (...args: unknown[]) => mockSignIn(...args),
+      signUp: (...args: unknown[]) => mockSignUp(...args),
+      signOut: (...args: unknown[]) => mockSignOut(...args),
       getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
     },
     from: () => ({

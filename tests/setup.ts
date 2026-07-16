@@ -35,7 +35,7 @@ vi.mock("next/navigation", () => ({
 // Mock next/image
 vi.mock("next/image", () => ({
   __esModule: true,
-  default: (props: any) => {
+  default: (props: React.ImgHTMLAttributes<HTMLImageElement> & { fill?: boolean }) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { fill, ...rest } = props;
     return React.createElement("img", rest);
