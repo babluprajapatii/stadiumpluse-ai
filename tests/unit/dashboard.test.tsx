@@ -5,7 +5,7 @@ import { FanDashboard } from "@/components/pages/FanDashboard";
 import { SecurityDashboard } from "@/components/pages/SecurityDashboard";
 import { AppProvider } from "@/providers/AppContext";
 
-// Mock Recharts charts inside widgets to prevent canvas context issues
+// Mock Recharts charts inside widgets to prevent canvas context issues & heap limits
 vi.mock("@/components/widgets/AttendanceChartWrapper", () => ({
   AttendanceChart: () => <div data-testid="mock-attendance-chart" />,
 }));
@@ -13,6 +13,14 @@ vi.mock("@/components/widgets/AttendanceChartWrapper", () => ({
 vi.mock("@/components/widgets/AIChartsWrapper", () => ({
   CrowdFlowChart: () => <div data-testid="mock-crowd-flow-chart" />,
   GateDonut: () => <div data-testid="mock-gate-donut" />,
+}));
+
+vi.mock("@/components/widgets/RevenueChart", () => ({
+  RevenueChart: () => <div data-testid="mock-revenue-chart" />,
+}));
+
+vi.mock("@/components/widgets/EventBanner", () => ({
+  EventBanner: () => <div data-testid="mock-event-banner" />,
 }));
 
 // Mock Auth context

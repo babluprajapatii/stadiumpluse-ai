@@ -39,17 +39,15 @@ test.describe("StadiumPulse AI E2E Flows", () => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify([
-          {
-            id: "test-user-uuid",
-            name: "Jamie O.",
-            email: "fan@stadium.com",
-            role: "fan",
-            is_verified: true,
-            member_since: "2026-07-16T12:00:00Z",
-            last_login: "2026-07-16T12:00:00Z",
-          },
-        ]),
+        body: JSON.stringify({
+          id: "test-user-uuid",
+          name: "Jamie O.",
+          email: "fan@stadium.com",
+          role: "fan",
+          is_verified: true,
+          member_since: "2026-07-16T12:00:00Z",
+          last_login: "2026-07-16T12:00:00Z",
+        }),
       });
     });
 
@@ -57,16 +55,14 @@ test.describe("StadiumPulse AI E2E Flows", () => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify([
-          {
-            user_id: "test-user-uuid",
-            theme: "system",
-            language: "en",
-            high_contrast: false,
-            font_size: "medium",
-            reduced_motion: false,
-          },
-        ]),
+        body: JSON.stringify({
+          user_id: "test-user-uuid",
+          theme: "system",
+          language: "en",
+          high_contrast: false,
+          font_size: "medium",
+          reduced_motion: false,
+        }),
       });
     });
 
@@ -140,11 +136,11 @@ test.describe("StadiumPulse AI E2E Flows", () => {
 
     // 4. Verify Notifications Page
     await page.goto("/notifications");
-    await expect(page.locator("h2")).toContainText("Notifications");
+    await expect(page.locator("h1")).toContainText("Notifications Center");
 
     // 5. Verify Settings Page
     await page.goto("/settings");
-    await expect(page.locator("h2")).toContainText("Settings");
+    await expect(page.locator("h1")).toContainText("Account Settings");
 
     // 6. Sign out via Sidebar
     await page.goto("/fan");
