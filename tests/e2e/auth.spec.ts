@@ -147,7 +147,7 @@ test.describe("StadiumPulse AI E2E Flows", () => {
     // Open logout confirm dialog
     await page.click("text=Logout");
     // Click confirm button
-    await page.click('button:has-text("Logout")');
+    await page.click('button.bg-destructive:has-text("Logout")');
 
     // Should redirect to landing page
     await expect(page).toHaveURL(/\//);
