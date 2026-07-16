@@ -8,8 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --pool=forks --maxWorkers=1",
-    "test:watch": "vitest --pool=forks --maxWorkers=1",
+    "test": "vitest run --pool=threads",
+    "test:watch": "vitest --pool=threads",
     "test:e2e": "playwright test"
   },
   "dependencies": {

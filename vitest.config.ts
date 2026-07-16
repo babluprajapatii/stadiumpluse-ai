@@ -9,12 +9,6 @@ export default defineConfig({
     globals: true,
     setupFiles: "./tests/setup.ts",
     include: ["tests/unit/**/*.test.ts", "tests/unit/**/*.test.tsx"],
-    pool: "forks",
-    poolOptions: {
-      forks: {
-        execArgv: ["--max-old-space-size=4096"],
-      },
-    },
   },
   resolve: {
     alias: {
