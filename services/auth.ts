@@ -31,7 +31,7 @@ async function logActivity(userId: string, action: string): Promise<void> {
     await supabase.from("activity_logs").insert({
       user_id: userId,
       action,
-      // IP is not available client-side; server-side logging would use request headers
+      ip_address: "127.0.0.1",
       user_agent: typeof window !== "undefined" ? window.navigator.userAgent : "SSR",
     });
   } catch {

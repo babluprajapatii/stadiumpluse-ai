@@ -89,7 +89,7 @@ create table public.activity_logs (
   id uuid default gen_random_uuid() primary key,
   user_id uuid references public.profiles on delete cascade not null,
   action public.activity_action not null,
-  ip_address inet not null,
+  ip_address inet,
   user_agent text not null,
   metadata jsonb,
   created_at timestamp with time zone default now() not null
