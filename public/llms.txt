@@ -1,0 +1,33 @@
+# StadiumPulse AI
+
+StadiumPulse AI is a GenAI-powered intelligent stadium operations and fan experience platform designed for the FIFA World Cup 2026.
+
+## Architecture & Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Database / Auth**: Supabase
+- **UI State**: AppContext / AuthProvider
+
+## Core URLs & Navigation
+
+- `/` - Public Landing Page
+- `/login` - Portal Sign In
+- `/register` - Portal Sign Up
+- `/forgot-password` - Account Recovery
+
+## Core Modules (Protected Dashboards)
+
+- `/fan` - Spectator Hub (Tickets, Queue wait times, Food concierge)
+- `/operator` - Facilities Command (Sensors state, network speed control)
+- `/organizer` - FIFA Event Operations (Gate allocations, revenue stats)
+- `/security` - Tactical Command Room (Incident reports, live CCTV feeds)
+- `/volunteer` - Volunteer Tasks Board (Assignments, sector check-ins)
+- `/accessibility` - Accessible Route Configurator & Services
+- `/ai` - Command Operations Assistant (Incident summarizer)
+- `/feature` - Food Ordering & queue wait estimates
+- `/notifications` - Operational alerts logs & notifications
+- `/profile` - Credentials & user profile settings
+- `/result` - Match results & gate traffic analytics
+- `/settings` - Theme & Accessibility preferences settings

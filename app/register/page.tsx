@@ -1,19 +1,13 @@
-"use client";
+import RegisterRouteClient from "./register-client";
+import { getSeoMetadata } from "@/lib/seo";
+import type { Metadata } from "next";
 
-import { RegisterPage } from "@/components/pages/RegisterPage";
-import { useRouter } from "next/navigation";
-import type { PageId } from "@/types";
+export const metadata: Metadata = getSeoMetadata({
+  title: "Create Account",
+  description: "Register for your StadiumPulse AI account. Access the FIFA World Cup 2026 operations dashboards and incident reporting.",
+  canonicalPath: "/register",
+});
 
-export default function RegisterRoute() {
-  const router = useRouter();
-
-  const navigate = (to: PageId) => {
-    if (to === "landing") {
-      router.push("/");
-    } else {
-      router.push(`/${to}`);
-    }
-  };
-
-  return <RegisterPage navigate={navigate} />;
+export default function RegisterPage() {
+  return <RegisterRouteClient />;
 }

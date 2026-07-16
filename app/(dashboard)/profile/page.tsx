@@ -1,19 +1,14 @@
-"use client";
+import ProfileRouteClient from "./profile-client";
+import { getSeoMetadata } from "@/lib/seo";
+import type { Metadata } from "next";
 
-import { ProfilePage } from "@/components/pages/ProfilePage";
-import { useRouter } from "next/navigation";
-import type { PageId } from "@/types";
+export const metadata: Metadata = getSeoMetadata({
+  title: "My Profile",
+  description: "View and edit your personal account profile, contact details, organization, and match credentials.",
+  canonicalPath: "/profile",
+  noIndex: true
+});
 
 export default function ProfileRoute() {
-  const router = useRouter();
-
-  const navigate = (to: PageId) => {
-    if (to === "landing") {
-      router.push("/");
-    } else {
-      router.push(`/${to}`);
-    }
-  };
-
-  return <ProfilePage navigate={navigate} />;
+  return <ProfileRouteClient />;
 }

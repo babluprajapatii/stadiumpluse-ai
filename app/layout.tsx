@@ -1,14 +1,24 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { getSeoMetadata } from "@/lib/seo";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import "./globals.css";
 
 import { AppProvider } from "@/providers/AppContext";
 import { AuthProvider } from "@/providers/AuthProvider";
 
-export const metadata: Metadata = {
-  title: "StadiumPulse AI · Intelligent Stadium Platform",
-  description: "GenAI-powered operations for FIFA World Cup 2026.",
+export const metadata: Metadata = getSeoMetadata({
+  title: "Intelligent Stadium Platform",
+  description: "GenAI-powered crowd intelligence, incident response, and fan experience platform for smart stadiums during the FIFA World Cup 2026.",
+  canonicalPath: "",
+});
+
+export const viewport: Viewport = {
+  themeColor: "#0f172a",
+  width: "device-width",
+  initialScale: 1,
 };
+
+import { OrganizationSchema, WebSiteSchema, WebApplicationSchema } from "@/components/seo/JsonLd";
 
 export default function RootLayout({
   children,
@@ -46,6 +56,9 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <AppProvider>
+              <OrganizationSchema />
+              <WebSiteSchema />
+              <WebApplicationSchema />
               {children}
             </AppProvider>
           </AuthProvider>

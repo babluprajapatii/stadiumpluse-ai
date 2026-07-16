@@ -1,19 +1,13 @@
-"use client";
+import ForgotPasswordRouteClient from "./forgot-client";
+import { getSeoMetadata } from "@/lib/seo";
+import type { Metadata } from "next";
 
-import { ForgotPasswordPage } from "@/components/pages/ForgotPasswordPage";
-import { useRouter } from "next/navigation";
-import type { PageId } from "@/types";
+export const metadata: Metadata = getSeoMetadata({
+  title: "Reset Password Recovery",
+  description: "Request a password reset verification link to recover access to your StadiumPulse AI account.",
+  canonicalPath: "/forgot-password",
+});
 
-export default function ForgotPasswordRoute() {
-  const router = useRouter();
-
-  const navigate = (to: PageId) => {
-    if (to === "landing") {
-      router.push("/");
-    } else {
-      router.push(`/${to}`);
-    }
-  };
-
-  return <ForgotPasswordPage navigate={navigate} />;
+export default function ForgotPasswordPage() {
+  return <ForgotPasswordRouteClient />;
 }

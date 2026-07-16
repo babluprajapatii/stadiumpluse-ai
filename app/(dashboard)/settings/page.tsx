@@ -1,19 +1,14 @@
-"use client";
+import SettingsRouteClient from "./settings-client";
+import { getSeoMetadata } from "@/lib/seo";
+import type { Metadata } from "next";
 
-import { SettingsPage } from "@/components/pages/SettingsPage";
-import { useRouter } from "next/navigation";
-import type { PageId } from "@/types";
+export const metadata: Metadata = getSeoMetadata({
+  title: "Account Settings",
+  description: "Manage app settings, configure accessibility parameters, scale text fonts, reduce animation motions, and switch notifications parameters.",
+  canonicalPath: "/settings",
+  noIndex: true
+});
 
 export default function SettingsRoute() {
-  const router = useRouter();
-
-  const navigate = (to: PageId) => {
-    if (to === "landing") {
-      router.push("/");
-    } else {
-      router.push(`/${to}`);
-    }
-  };
-
-  return <SettingsPage navigate={navigate} />;
+  return <SettingsRouteClient />;
 }

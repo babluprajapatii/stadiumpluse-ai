@@ -1,19 +1,13 @@
-"use client";
+import LoginRouteClient from "./login-client";
+import { getSeoMetadata } from "@/lib/seo";
+import type { Metadata } from "next";
 
-import { LoginPage } from "@/components/pages/LoginPage";
-import { useRouter } from "next/navigation";
-import type { PageId } from "@/types";
+export const metadata: Metadata = getSeoMetadata({
+  title: "Sign In",
+  description: "Access your StadiumPulse AI FIFA World Cup 2026 operations portal. Role-based access for fans, organizers, security, and volunteers.",
+  canonicalPath: "/login",
+});
 
-export default function LoginRoute() {
-  const router = useRouter();
-
-  const navigate = (to: PageId) => {
-    if (to === "landing") {
-      router.push("/");
-    } else {
-      router.push(`/${to}`);
-    }
-  };
-
-  return <LoginPage navigate={navigate} />;
+export default function LoginPage() {
+  return <LoginRouteClient />;
 }
