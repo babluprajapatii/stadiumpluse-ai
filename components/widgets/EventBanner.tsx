@@ -49,8 +49,12 @@ export function EventBanner({
         </div>
       </div>
 
-      <div className="mt-3" aria-hidden="true">
-        <ResponsiveContainer width="100%" height={36}>
+      {/*
+        RECHARTS v3 MIGRATION: Wrapped ResponsiveContainer in a parent div with
+        explicit height (36px) and set ResponsiveContainer to 100% height to avoid warnings.
+      */}
+      <div className="mt-3 h-[36px] w-full" aria-hidden="true">
+        <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="eventBannerGrad" x1="0" y1="0" x2="0" y2="1">

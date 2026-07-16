@@ -35,23 +35,34 @@ export function CrowdFlowChart() {
           <span className="font-semibold text-primary">47,300 now</span>
         </div>
       </div>
-      <ResponsiveContainer width="100%" height={72}>
-        <AreaChart data={crowdFlowData} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
-          <defs>
-            <linearGradient id="crowdGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <Area type="monotone" dataKey="v" stroke="var(--color-primary)" strokeWidth={2}
-            fill="url(#crowdGrad)" dot={false} />
-          <Tooltip
-            contentStyle={{ background: "var(--color-card)", border: "1px solid var(--color-border)", borderRadius: "8px", fontSize: "11px", color: "var(--color-foreground)" }}
-            formatter={(v: number) => [v.toLocaleString(), "Attendees"]}
-            labelStyle={{ color: "var(--color-muted-foreground)", fontSize: "10px" }}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
+      <div className="h-[72px] w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={crowdFlowData} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="crowdGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <Area type="monotone" dataKey="v" stroke="var(--color-primary)" strokeWidth={2}
+              fill="url(#crowdGrad)" dot={false} />
+            <Tooltip
+              contentStyle={{ background: "var(--color-card)", border: "1px solid var(--color-border)", borderRadius: "8px", fontSize: "11px", color: "var(--color-foreground)" }}
+              formatter={(value: unknown) => {
+                if (typeof value === "number") {
+                  return [value.toLocaleString(), "Attendees"];
+                }
+                if (typeof value === "string") {
+                  const parsed = Number(value);
+                  return [isNaN(parsed) ? value : parsed.toLocaleString(), "Attendees"];
+                }
+                return ["-", "Attendees"];
+              }}
+              labelStyle={{ color: "var(--color-muted-foreground)", fontSize: "10px" }}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }
@@ -62,15 +73,17 @@ export function GateDonut() {
       <p className="text-xs font-semibold text-foreground mb-1">Gate Utilisation</p>
       <p className="text-[10px] text-muted-foreground mb-3">% capacity per gate</p>
       <div className="flex items-center gap-4">
-        <div className="relative">
-          <ResponsiveContainer width={80} height={80}>
-            <PieChart>
-              <Pie data={gateData} cx="50%" cy="50%" innerRadius={24} outerRadius={38}
-                dataKey="value" strokeWidth={0}>
-                {gateData.map(entry => <Cell key={entry.name} fill={entry.color} />)}
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
+        <div className="relative w-20 h-20 shrink-0">
+          {/*
+            RECHARTS v3 MIGRATION: Fixed size chart (80x80) should not be wrapped
+            in a ResponsiveContainer to avoid "width and height are fixed numbers" warnings.
+          */}
+          <PieChart width={80} height={80}>
+            <Pie data={gateData} cx="50%" cy="50%" innerRadius={24} outerRadius={38}
+              dataKey="value" strokeWidth={0}>
+              {gateData.map(entry => <Cell key={entry.name} fill={entry.color} />)}
+            </Pie>
+          </PieChart>
         </div>
         <div className="space-y-1.5 flex-1">
           {gateData.map(({ name, value, color }) => (
