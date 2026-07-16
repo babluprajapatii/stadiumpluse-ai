@@ -1,12 +1,14 @@
 {
-  "name": "stadiumpulse-nextjs",
+  "name": "stadiumpluse-ai",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "echo 'No automated test suite configured yet' && exit 0"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.3",

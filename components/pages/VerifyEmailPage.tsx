@@ -32,7 +32,7 @@ export function VerifyEmailPage({ navigate, token }: { navigate: Navigate; token
         setIsSuccess(true);
         setVerificationError("");
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
         setVerificationError(getErrorMessage(err, "Invalid or expired verification token."));
       })
       .finally(() => {

@@ -11,26 +11,20 @@ export interface NormalizedError {
   status?: number;
   details?: string;
   hint?: string;
-  stack?: string;
 }
 
+/**
+ * Normalizes any thrown value into a user-safe error object.
+ * In development, the full error is logged to the console.
+ * In production, only a sanitized message is returned — no stack traces or internal codes.
+ */
 export function normalizeError(err: unknown): NormalizedError {
-  // Explicitly print properties as requested in Phase 4
-  console.error("FULL ERROR:", err);
-  try {
-    console.error("JSON:", JSON.stringify(err, null, 2));
-  } catch {
-    console.error("JSON: [Serialization Failed]");
+  // In development, log the full error for debugging purposes only
+  if (process.env.NODE_ENV === "development") {
+    console.error("[StadiumPulse Error]:", err);
   }
 
   const errorObj = (err && typeof err === "object" ? err : {}) as Record<string, unknown>;
-
-  console.error("Message:", errorObj.message || (err instanceof Error ? err.message : undefined));
-  console.error("Code:", errorObj.code);
-  console.error("Status:", errorObj.status);
-  console.error("Details:", errorObj.details);
-  console.error("Hint:", errorObj.hint);
-  console.error("Stack:", errorObj.stack || (err instanceof Error ? err.stack : undefined));
 
   let message = "An unexpected error occurred.";
   if (err instanceof Error) {
@@ -45,9 +39,9 @@ export function normalizeError(err: unknown): NormalizedError {
     }
   }
 
-  // Prevent "{}" or empty message
-  if (!message || message === "{}" || message === "[]") {
-    message = "Connection failed or database constraint violation.";
+  // Guard: never render "{}", "[]", or empty strings to the user
+  if (!message || message === "{}" || message === "[]" || message.trim() === "") {
+    message = "Connection failed or a database constraint was violated.";
   }
 
   return {
@@ -56,11 +50,16 @@ export function normalizeError(err: unknown): NormalizedError {
     status: typeof errorObj.status === "number" ? errorObj.status : undefined,
     details: errorObj.details ? String(errorObj.details) : undefined,
     hint: errorObj.hint ? String(errorObj.hint) : undefined,
-    stack: errorObj.stack ? String(errorObj.stack) : (err instanceof Error ? err.stack : undefined),
   };
 }
 
+/**
+ * Returns a human-readable error message, falling back to the provided string
+ * if the error cannot be meaningfully parsed.
+ */
 export function getErrorMessage(err: unknown, fallback: string): string {
   const normalized = normalizeError(err);
-  return normalized.message && normalized.message !== "An unexpected error occurred." ? normalized.message : fallback;
+  return normalized.message && normalized.message !== "An unexpected error occurred."
+    ? normalized.message
+    : fallback;
 }

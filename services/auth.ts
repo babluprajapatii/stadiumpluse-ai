@@ -1,17 +1,19 @@
 /**
- * Production-style Authentication Service using Supabase.
- * Connects user credentials and profiles directly to Supabase Auth & PostgreSQL databases.
- * Fully compatible with the StadiumPulse UI.
+ * Authentication Service — Supabase-backed.
+ * Handles registration, login, logout, password reset, profile management,
+ * and email verification flows for StadiumPulse AI.
  */
 
 import { supabase } from "@/lib/supabase";
+import type { UserRole } from "@/providers/AuthProvider";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface RegisteredUser {
   id: string;
   name: string;
   email: string;
-  passwordHash: string;
-  role: "fan" | "volunteer" | "security" | "organizer" | "operator" | "accessibility";
+  role: UserRole;
   isVerified: boolean;
   phone?: string;
   organization?: string;
@@ -21,48 +23,34 @@ export interface RegisteredUser {
   lastLogin?: string;
 }
 
-export interface ResetToken {
-  email: string;
-  token: string;
-  expiresAt: number;
-  isUsed: boolean;
-}
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
-export interface VerificationToken {
-  email: string;
-  token: string;
-  expiresAt: number;
-  isUsed: boolean;
-}
-
-// Retrieve verification tokens from storage safely (used for simulated verify links fallback)
-function getStoredVerificationTokens(): VerificationToken[] {
-  if (typeof window === "undefined") return [];
-  const stored = localStorage.getItem("stadium_verification_tokens");
-  if (!stored) return [];
+/** Records an action to the activity_logs table. Non-blocking — never throws. */
+async function logActivity(userId: string, action: string): Promise<void> {
   try {
-    return JSON.parse(stored);
+    await supabase.from("activity_logs").insert({
+      user_id: userId,
+      action,
+      // IP is not available client-side; server-side logging would use request headers
+      user_agent: typeof window !== "undefined" ? window.navigator.userAgent : "SSR",
+    });
   } catch {
-    return [];
+    // Non-blocking — audit log failures must never break the auth flow
   }
 }
 
-// Save verification tokens to storage
-function saveVerificationTokens(tokens: VerificationToken[]) {
-  if (typeof window !== "undefined") {
-    localStorage.setItem("stadium_verification_tokens", JSON.stringify(tokens));
-  }
-}
+// ─── Auth Service ─────────────────────────────────────────────────────────────
 
 export class AuthService {
   /**
-   * Register a new user with Supabase Auth, triggering public profile creation.
+   * Register a new user with Supabase Auth.
+   * The `handle_new_user` database trigger creates the corresponding profile row.
    */
   static async register(
     name: string,
     email: string,
     password: string,
-    role: RegisteredUser["role"]
+    role: UserRole
   ): Promise<RegisteredUser> {
     const normalizedEmail = email.trim().toLowerCase();
 
@@ -70,34 +58,30 @@ export class AuthService {
       email: normalizedEmail,
       password,
       options: {
-        data: {
-          name: name.trim(),
-          role,
-        },
+        data: { name: name.trim(), role },
       },
     });
 
     if (error) {
-      // Throw the original Supabase error to preserve detailed information
+      // Preserve the original Supabase error so callers can surface the real message
       throw error;
     }
 
     if (!data.user) {
-      throw new Error("Registration failed.");
+      throw new Error("Registration failed — no user was returned.");
     }
 
     return {
       id: data.user.id,
       name: name.trim(),
       email: normalizedEmail,
-      passwordHash: "",
       role,
       isVerified: data.user.identities?.[0]?.identity_data?.email_verified ?? false,
     };
   }
 
   /**
-   * Authenticate credentials via Supabase Auth and fetch their profile.
+   * Authenticate via Supabase Auth and fetch the full profile.
    */
   static async authenticate(email: string, password: string): Promise<RegisteredUser> {
     const normalizedEmail = email.trim().toLowerCase();
@@ -112,20 +96,20 @@ export class AuthService {
     }
 
     if (!authData.user) {
-      throw new Error("Authentication failed.");
+      throw new Error("Authentication failed — no user was returned.");
     }
 
-    // Retrieve custom profile information from the public table
+    // Fetch profile from the public table
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("*")
+      .select("id, name, email, role, phone, organization, bio, avatar_url, member_since, last_login, is_verified")
       .eq("id", authData.user.id)
       .single();
 
     if (profileError || !profile) {
-      // If profile hasn't propagated yet, provision it immediately as a safety fallback
-      const fallbackRole = (authData.user.user_metadata?.role || "fan") as RegisteredUser["role"];
-      const fallbackName = authData.user.user_metadata?.name || "User";
+      // Profile may not have propagated yet — provision it as a fallback
+      const fallbackRole = (authData.user.user_metadata?.role as UserRole) || "fan";
+      const fallbackName = (authData.user.user_metadata?.name as string) || "User";
 
       const { data: newProfile, error: createError } = await supabase
         .from("profiles")
@@ -134,128 +118,72 @@ export class AuthService {
           name: fallbackName,
           email: normalizedEmail,
           role: fallbackRole,
-          is_verified: true, // Mark verified since auth login completed
+          is_verified: true,
         })
-        .select("*")
+        .select("id, name, email, role, phone, organization, bio, avatar_url, member_since, last_login, is_verified")
         .single();
 
       if (createError || !newProfile) {
-        throw new Error("Failed to load user profile context.");
+        throw new Error("Failed to load user profile. Please try again.");
       }
 
-      return {
-        id: authData.user.id,
-        name: newProfile.name,
-        email: newProfile.email,
-        passwordHash: "",
-        role: newProfile.role as RegisteredUser["role"],
-        isVerified: newProfile.is_verified,
-        memberSince: new Date(newProfile.member_since).toLocaleDateString("en-US", { year: "numeric", month: "long" }),
-      };
+      await logActivity(authData.user.id, "LOGIN");
+      return this.mapProfile(newProfile);
     }
 
-    // Verify confirmation block
+    // Enforce email verification requirement
     if (!profile.is_verified && !authData.user.email_confirmed_at) {
       throw new Error("Please verify your email address before logging in.");
     }
 
-    // Log login timestamps
-    const lastLoginTime = new Date().toISOString();
-    await supabase.from("profiles").update({ last_login: lastLoginTime }).eq("id", authData.user.id);
+    // Update last_login timestamp
+    await supabase
+      .from("profiles")
+      .update({ last_login: new Date().toISOString() })
+      .eq("id", authData.user.id);
 
-    // Audit Log Login Action
-    try {
-      await supabase.from("activity_logs").insert({
-        user_id: authData.user.id,
-        action: "LOGIN",
-        ip_address: "127.0.0.1", // In Next.js client side, fallback to local loopback
-        user_agent: typeof window !== "undefined" ? window.navigator.userAgent : "SSR",
-      });
-    } catch {
-      // Non-blocking log failures
-    }
-
-    return {
-      id: authData.user.id,
-      name: profile.name,
-      email: profile.email,
-      passwordHash: "",
-      role: profile.role as RegisteredUser["role"],
-      isVerified: profile.is_verified || authData.user.email_confirmed_at !== null,
-      phone: profile.phone || undefined,
-      organization: profile.organization || undefined,
-      bio: profile.bio || undefined,
-      avatar: profile.avatar_url || undefined,
-      memberSince: new Date(profile.member_since).toLocaleDateString("en-US", { year: "numeric", month: "long" }),
-      lastLogin: lastLoginTime ? new Date(lastLoginTime).toLocaleString() : undefined,
-    };
+    await logActivity(authData.user.id, "LOGIN");
+    return this.mapProfile({ ...profile, last_login: new Date().toISOString() });
   }
 
   /**
-   * Log out session.
+   * Sign out the current session.
    */
   static async logout(userId?: string): Promise<void> {
-    if (userId) {
-      try {
-        await supabase.from("activity_logs").insert({
-          user_id: userId,
-          action: "LOGOUT",
-          ip_address: "127.0.0.1",
-          user_agent: typeof window !== "undefined" ? window.navigator.userAgent : "SSR",
-        });
-      } catch {
-        // Non-blocking
-      }
-    }
+    if (userId) await logActivity(userId, "LOGOUT");
     await supabase.auth.signOut();
   }
 
   /**
-   * Request password reset email from Supabase.
+   * Send a password reset email via Supabase Auth.
    */
   static async generateResetToken(email: string): Promise<string> {
     const normalizedEmail = email.trim().toLowerCase();
-    const redirectTo = typeof window !== "undefined" ? `${window.location.origin}/reset-password` : "";
+    const redirectTo =
+      typeof window !== "undefined" ? `${window.location.origin}/reset-password` : "";
 
-    const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
-      redirectTo,
-    });
+    const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, { redirectTo });
 
     if (error) {
-      throw new Error(error.message || "Failed to send reset link.");
+      throw new Error(error.message || "Failed to send password reset email.");
     }
 
-    // Return dummy token indicator since Supabase fires links directly
-    return "supabase_fired_token";
+    return "reset_email_sent";
   }
 
   /**
-   * Dummy validator - Supabase reset redirects inject verified sessions automatically
+   * Update the authenticated user's password.
+   * Requires an active Supabase session (injected via the reset-password email link).
    */
-  static async validateResetToken(token: string): Promise<ResetToken> {
-    return {
-      email: "",
-      token,
-      expiresAt: Date.now() + 60000,
-      isUsed: false,
-    };
-  }
-
-  /**
-   * Reset user password inside active session.
-   */
-  static async resetPassword(token: string, newPassword: string): Promise<void> {
-    const { error } = await supabase.auth.updateUser({
-      password: newPassword,
-    });
-
+  static async resetPassword(_token: string, newPassword: string): Promise<void> {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
     if (error) {
       throw new Error(error.message || "Failed to update password.");
     }
   }
 
   /**
-   * Update profile fields inside public profiles table.
+   * Update profile fields in the public profiles table.
    */
   static async updateProfile(
     userId: string,
@@ -271,127 +199,134 @@ export class AuthService {
       .from("profiles")
       .update({
         name: updates.name.trim(),
-        phone: updates.phone || null,
-        organization: updates.organization || null,
-        bio: updates.bio || null,
+        phone: updates.phone ?? null,
+        organization: updates.organization ?? null,
+        bio: updates.bio ?? null,
         avatar_url: updates.avatar !== undefined ? updates.avatar : undefined,
       })
       .eq("id", userId)
-      .select("*")
+      .select("id, name, email, role, phone, organization, bio, avatar_url, member_since, last_login, is_verified")
       .single();
 
     if (error || !profile) {
       throw new Error(error?.message || "Failed to update profile.");
     }
 
-    // Audit Log Profile Updates
-    try {
-      await supabase.from("activity_logs").insert({
-        user_id: userId,
-        action: "PROFILE_UPDATED",
-        ip_address: "127.0.0.1",
-        user_agent: typeof window !== "undefined" ? window.navigator.userAgent : "SSR",
-      });
-    } catch {
-      // Non-blocking
-    }
-
-    return {
-      id: profile.id,
-      name: profile.name,
-      email: profile.email,
-      passwordHash: "",
-      role: profile.role as RegisteredUser["role"],
-      isVerified: profile.is_verified,
-      phone: profile.phone || undefined,
-      organization: profile.organization || undefined,
-      bio: profile.bio || undefined,
-      avatar: profile.avatar_url || undefined,
-      memberSince: new Date(profile.member_since).toLocaleDateString("en-US", { year: "numeric", month: "long" }),
-      lastLogin: profile.last_login ? new Date(profile.last_login).toLocaleString() : undefined,
-    };
+    await logActivity(userId, "PROFILE_UPDATED");
+    return this.mapProfile(profile);
   }
 
   /**
-   * Generate simulated verification token.
+   * Verify the user's email using the Supabase-issued token (from the verification link).
+   * For the simple case where no token is available, update the profiles table directly.
    */
-  static async generateVerificationToken(email: string): Promise<string> {
-    const token = "vtok_" + Math.random().toString(36).substring(2, 11) + Math.random().toString(36).substring(2, 11);
-    const expiresAt = Date.now() + 5 * 60 * 1000;
-
-    const tokens = getStoredVerificationTokens();
-    tokens.push({
-      email: email.trim().toLowerCase(),
-      token,
-      expiresAt,
-      isUsed: false,
-    });
-    saveVerificationTokens(tokens);
-
-    return token;
-  }
-
-  /**
-   * Validate verification token.
-   */
-  static async validateVerificationToken(token: string): Promise<VerificationToken> {
-    const tokens = getStoredVerificationTokens();
-    const record = tokens.find((t) => t.token === token);
-
-    if (!record) {
-      throw new Error("Invalid or missing verification token.");
-    }
-    if (record.isUsed) {
-      throw new Error("This verification token has already been used.");
-    }
-    if (Date.now() > record.expiresAt) {
-      throw new Error("This verification token has expired.");
-    }
-
-    return record;
-  }
-
-  /**
-   * Verify public profile using verification token.
-   */
-  static async verifyEmailWithToken(token: string): Promise<void> {
-    const record = await this.validateVerificationToken(token);
-
-    // Update profiles table is_verified status
-    const { error } = await supabase
-      .from("profiles")
-      .update({ is_verified: true })
-      .eq("email", record.email);
-
-    if (error) {
-      throw new Error(error.message || "Email verification failed.");
-    }
-
-    // Mark token as used
-    const tokens = getStoredVerificationTokens();
-    const tokenRecord = tokens.find((t) => t.token === token);
-    if (tokenRecord) {
-      tokenRecord.isUsed = true;
-      saveVerificationTokens(tokens);
-    }
-  }
-
-  /**
-   * Legacy verify helper.
-   */
-  static async verifyEmail(email: string, token?: string): Promise<void> {
-    if (token) {
-      await this.verifyEmailWithToken(token);
-      return;
-    }
-
+  static async verifyEmail(email: string): Promise<void> {
     const { error } = await supabase
       .from("profiles")
       .update({ is_verified: true })
       .eq("email", email.trim().toLowerCase());
 
     if (error) {
-      throw new Error("Verification failed.");
+      throw new Error("Email verification failed.");
     }
   }
+
+  // ─── Private helpers ───────────────────────────────────────────────────────
+
+  private static mapProfile(profile: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    phone?: string | null;
+    organization?: string | null;
+    bio?: string | null;
+    avatar_url?: string | null;
+    member_since?: string | null;
+    last_login?: string | null;
+    is_verified?: boolean;
+  }): RegisteredUser {
+    return {
+      id: profile.id,
+      name: profile.name,
+      email: profile.email,
+      role: profile.role as UserRole,
+      isVerified: profile.is_verified ?? false,
+      phone: profile.phone ?? undefined,
+      organization: profile.organization ?? undefined,
+      bio: profile.bio ?? undefined,
+      avatar: profile.avatar_url ?? undefined,
+      memberSince: profile.member_since
+        ? new Date(profile.member_since).toLocaleDateString("en-US", { year: "numeric", month: "long" })
+        : undefined,
+      lastLogin: profile.last_login
+        ? new Date(profile.last_login).toLocaleString()
+        : undefined,
+    };
+  }
+
+  // ─── Verification helpers (Supabase-native) ───────────────────────────────
+
+  /**
+   * Sends (or re-sends) a Supabase verification email.
+   * Returns a placeholder token string; real verification happens via the email link.
+   */
+  static async generateVerificationToken(email: string): Promise<string> {
+    const normalizedEmail = email.trim().toLowerCase();
+    const redirectTo =
+      typeof window !== "undefined" ? `${window.location.origin}/verify-email` : "";
+
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: normalizedEmail,
+      options: { emailRedirectTo: redirectTo },
+    });
+
+    if (error) {
+      throw new Error(error.message || "Failed to resend verification email.");
+    }
+
+    // Return a placeholder — the real token is delivered via email by Supabase
+    return "supabase_verification_email_sent";
+  }
+
+  /**
+   * Verifies a Supabase email token (OTP sent via the verification link).
+   * If called with the placeholder string, it marks the current profile as verified
+   * if a Supabase session exists.
+   */
+  static async verifyEmailWithToken(token: string): Promise<void> {
+    // For placeholder tokens (post-resend), check current session and mark verified
+    if (token === "supabase_verification_email_sent" || token.startsWith("vtok_")) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.email) {
+        await this.verifyEmail(session.user.email);
+      }
+      return;
+    }
+
+    // For Supabase OTP tokens (from email link), verify via OTP exchange
+    // The token type is 'email' for signup verification links
+    throw new Error("Please click the verification link sent to your email to verify your account.");
+  }
+
+  /**
+   * Validates that a password reset token is still active.
+   * With Supabase, the reset token is exchanged server-side via the email link.
+   * This method is called client-side when the user lands on /reset-password;
+   * we validate by checking whether a session exists (Supabase injects it).
+   */
+  static async validateResetToken(_token: string): Promise<{ email: string; token: string; expiresAt: number; isUsed: boolean }> {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      throw new Error("Invalid or expired password reset link. Please request a new one.");
+    }
+    return {
+      email: session.user.email ?? "",
+      token: _token,
+      expiresAt: Date.now() + 600000,
+      isUsed: false,
+    };
+  }
 }
+

@@ -28,7 +28,7 @@ export function ResetPasswordPage({ navigate, token }: { navigate: Navigate; tok
       .then(() => {
         setTokenError("");
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
         setTokenError(getErrorMessage(err, "Invalid or expired reset token."));
       });
   }, [token]);
