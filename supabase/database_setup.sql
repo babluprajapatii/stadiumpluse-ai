@@ -117,7 +117,7 @@ CREATE TABLE IF NOT EXISTS public.activity_logs (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES public.profiles ON DELETE CASCADE NOT NULL,
   action public.activity_action NOT NULL,
-  ip_address INET NOT NULL,
+  ip_address INET,
   user_agent TEXT NOT NULL,
   metadata JSONB,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
