@@ -35,6 +35,14 @@ test.describe("StadiumPulse AI E2E Flows", () => {
       });
     });
 
+    await page.route("**/auth/v1/otp*", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({}),
+      });
+    });
+
     await page.route("**/rest/v1/profiles*", async (route) => {
       await route.fulfill({
         status: 200,
