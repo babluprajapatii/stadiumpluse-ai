@@ -23,6 +23,11 @@ vi.mock("@/components/widgets/EventBanner", () => ({
   EventBanner: () => <div data-testid="mock-event-banner" />,
 }));
 
+// Mock StadiumMap to bypass SVG path processing heap exhaustion
+vi.mock("@/components/stadium-map", () => ({
+  StadiumMap: () => <div data-testid="mock-stadium-map" />,
+}));
+
 // Mock Auth context
 vi.mock("@/providers/AuthProvider", () => ({
   useAuth: () => ({
@@ -57,6 +62,7 @@ describe("Dashboard Components", () => {
       expect(screen.getByText("Gate Utilisation")).toBeInTheDocument();
       expect(screen.getByTestId("mock-crowd-flow-chart")).toBeInTheDocument();
       expect(screen.getByTestId("mock-gate-donut")).toBeInTheDocument();
+      expect(screen.getByTestId("mock-stadium-map")).toBeInTheDocument();
     });
   });
 });

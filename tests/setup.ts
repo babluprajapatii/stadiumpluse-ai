@@ -41,3 +41,14 @@ vi.mock("next/image", () => ({
     return React.createElement("img", rest);
   },
 }));
+
+// Mock lucide-react to prevent heavy layout parsing memory OOMs
+vi.mock("lucide-react", async (importOriginal) => {
+  const original = await importOriginal<typeof import("lucide-react")>();
+  const mockIcons: Record<string, React.ComponentType<React.HTMLAttributes<HTMLDivElement>>> = {};
+  Object.keys(original).forEach((key) => {
+    mockIcons[key] = (props: React.HTMLAttributes<HTMLDivElement>) => 
+      React.createElement("div", { "data-testid": `icon-${key}`, ...props });
+  });
+  return mockIcons;
+});
