@@ -488,7 +488,7 @@ describe("Comprehensive Services & API Tests", () => {
     });
 
     it("sends password reset link email", async () => {
-      const mockResetSupabase = vi.spyOn(supabase.auth, "resetPasswordForEmail").mockResolvedValueOnce({ error: null });
+      const mockResetSupabase = vi.spyOn(supabase.auth, "resetPasswordForEmail").mockResolvedValueOnce({ data: {}, error: null });
       const res = await AuthService.generateResetToken("bob@stadium.com");
       expect(res).toBe("reset_email_sent");
       expect(mockResetSupabase).toHaveBeenCalled();
