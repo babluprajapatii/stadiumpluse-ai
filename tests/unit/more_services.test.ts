@@ -6,6 +6,7 @@ import { AuthService } from "@/services/auth";
 import { NotificationsService } from "@/services/notifications";
 import { SettingsService, DEFAULT_SETTINGS } from "@/services/settings";
 import { supabase } from "@/lib/supabase";
+import type { AuthError, User, Session } from "@supabase/supabase-js";
 
 // --- Mock Globals ---
 const mockFetch = vi.fn();
@@ -707,18 +708,27 @@ describe("Comprehensive Services & API Tests", () => {
   // ─── EXTRA COVERAGE TESTS FOR SECURITY & ERROR PATHWAYS ─────────────────────
   describe("Extra Coverage Error Paths", () => {
     it("generateResetToken throws error when supabase resets fail", async () => {
-      vi.spyOn(supabase.auth, "resetPasswordForEmail").mockResolvedValueOnce({ data: null, error: new Error("Reset crash") as any });
+      vi.spyOn(supabase.auth, "resetPasswordForEmail").mockResolvedValueOnce({
+        data: null,
+        error: { name: "AuthError", message: "Reset crash", status: 500 } as unknown as AuthError,
+      });
       await expect(AuthService.generateResetToken("fail@test.com")).rejects.toThrow("Reset crash");
     });
 
     it("generateVerificationToken throws error when supabase resend fails", async () => {
-      vi.spyOn(supabase.auth, "resend").mockResolvedValueOnce({ data: null, error: new Error("Resend crash") as any });
+      vi.spyOn(supabase.auth, "resend").mockResolvedValueOnce({
+        data: { user: null, session: null },
+        error: { name: "AuthError", message: "Resend crash", status: 500 } as unknown as AuthError,
+      });
       await expect(AuthService.generateVerificationToken("fail@test.com")).rejects.toThrow("Resend crash");
     });
 
     it("authenticate throws error when profile loading and creation both fail", async () => {
       vi.spyOn(supabase.auth, "signInWithPassword").mockResolvedValueOnce({
-        data: { user: { id: "user-999", email: "test@stadium.com", user_metadata: { role: "fan" } } } as any,
+        data: {
+          user: { id: "user-999", email: "test@stadium.com", email_confirmed_at: "2026-01-01T00:00:00Z", user_metadata: { role: "fan" } } as unknown as User,
+          session: {} as unknown as Session,
+        },
         error: null,
       });
 
@@ -731,28 +741,43 @@ describe("Comprehensive Services & API Tests", () => {
     });
 
     it("register throws error when signup fails in Supabase Auth", async () => {
-      vi.spyOn(supabase.auth, "signUp").mockResolvedValueOnce({ data: { user: null }, error: new Error("Auth signup failure") as any });
+      vi.spyOn(supabase.auth, "signUp").mockResolvedValueOnce({
+        data: { user: null, session: null },
+        error: { name: "AuthError", message: "Auth signup failure", status: 400 } as unknown as AuthError,
+      });
       await expect(AuthService.register("User", "test@test.com", "Pass123!", "fan")).rejects.toThrow("Auth signup failure");
     });
 
     it("register throws error when signup returns empty user with no error", async () => {
-      vi.spyOn(supabase.auth, "signUp").mockResolvedValueOnce({ data: { user: null }, error: null });
+      vi.spyOn(supabase.auth, "signUp").mockResolvedValueOnce({
+        data: { user: null, session: null },
+        error: null,
+      } as unknown as Awaited<ReturnType<typeof supabase.auth.signUp>>);
       await expect(AuthService.register("User", "test@test.com", "Pass123!", "fan")).rejects.toThrow("Registration failed");
     });
 
     it("authenticate throws error when signInWithPassword fails", async () => {
-      vi.spyOn(supabase.auth, "signInWithPassword").mockResolvedValueOnce({ data: { user: null }, error: new Error("Invalid password") as any });
+      vi.spyOn(supabase.auth, "signInWithPassword").mockResolvedValueOnce({
+        data: { user: null, session: null },
+        error: { name: "AuthError", message: "Invalid password", status: 400 } as unknown as AuthError,
+      });
       await expect(AuthService.authenticate("test@test.com", "wrong")).rejects.toThrow("Invalid password");
     });
 
     it("authenticate throws error when signInWithPassword returns empty user", async () => {
-      vi.spyOn(supabase.auth, "signInWithPassword").mockResolvedValueOnce({ data: { user: null }, error: null });
+      vi.spyOn(supabase.auth, "signInWithPassword").mockResolvedValueOnce({
+        data: { user: null, session: null },
+        error: null,
+      } as unknown as Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>);
       await expect(AuthService.authenticate("test@test.com", "Pass123!")).rejects.toThrow("Authentication failed");
     });
 
     it("authenticate throws error when user email is not verified", async () => {
       vi.spyOn(supabase.auth, "signInWithPassword").mockResolvedValueOnce({
-        data: { user: { id: "u123", email_confirmed_at: null } } as any,
+        data: {
+          user: { id: "u123", email_confirmed_at: null } as unknown as User,
+          session: {} as unknown as Session,
+        },
         error: null,
       });
       mockFromSelect.mockResolvedValueOnce({
@@ -776,7 +801,7 @@ describe("Comprehensive Services & API Tests", () => {
     it("NotificationsService getNotifications returns empty array if localStorage is missing or window is undefined", async () => {
       const originalWindow = global.window;
       // Mock window as undefined temporarily
-      const tempWindow = undefined as any;
+      const tempWindow = undefined as unknown as Window & typeof globalThis;
       Object.defineProperty(global, "window", {
         writable: true,
         value: tempWindow,
@@ -834,7 +859,7 @@ describe("Comprehensive Services & API Tests", () => {
 
     it("SettingsService.applySettings returns early if window is undefined", () => {
       const originalWindow = global.window;
-      const tempWindow = undefined as any;
+      const tempWindow = undefined as unknown as Window & typeof globalThis;
       Object.defineProperty(global, "window", {
         writable: true,
         value: tempWindow,
