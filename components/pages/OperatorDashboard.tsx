@@ -1,3 +1,5 @@
+"use client";
+
 import { AlertTriangle, Activity, Wifi, CheckCircle, Users, Settings, ClipboardList, Zap } from "lucide-react";
 import { StatCard } from "../ui/stat-card";
 import { cn } from "../ui/utils";
@@ -5,8 +7,13 @@ import { Surface } from "../shared/Surface";
 import { SectionHeading } from "../shared/SectionHeading";
 import { MobileHeader } from "../shared/MobileHeader";
 import { BottomNav } from "../shared/BottomNav";
-import { StadiumMap } from "../stadium-map";
+import dynamic from "next/dynamic";
 import { EmptyIncidents } from "../states";
+
+const StadiumMap = dynamic(() => import("../stadium-map").then((mod) => mod.StadiumMap), {
+  ssr: false,
+  loading: () => <div className="h-[300px] w-full bg-card/50 animate-pulse rounded-xl" />
+});
 
 export function OperatorDashboard() {
   return (

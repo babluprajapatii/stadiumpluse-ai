@@ -10,7 +10,17 @@ import {
 import { Button } from "../ui/button";
 import { LiveBadge } from "../ui/live-badge";
 import { cn } from "../ui/utils";
-import { CrowdFlowChart, GateDonut } from "../widgets/AIChartsWrapper";
+import dynamic from "next/dynamic";
+
+const CrowdFlowChart = dynamic(() => import("../widgets/AIChartsWrapper").then((mod) => mod.CrowdFlowChart), {
+  ssr: false,
+  loading: () => <div className="h-[200px] w-full bg-card/50 animate-pulse rounded-xl" />
+});
+
+const GateDonut = dynamic(() => import("../widgets/AIChartsWrapper").then((mod) => mod.GateDonut), {
+  ssr: false,
+  loading: () => <div className="h-[200px] w-full bg-card/50 animate-pulse rounded-xl" />
+});
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

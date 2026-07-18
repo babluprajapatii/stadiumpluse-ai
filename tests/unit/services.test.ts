@@ -7,7 +7,6 @@ import { SettingsService, DEFAULT_SETTINGS, UserSettings } from "@/services/sett
 const mockSignIn = vi.fn();
 const mockSignUp = vi.fn();
 const mockSignOut = vi.fn();
-const mockSelect = vi.fn();
 
 vi.mock("@/lib/supabase", () => ({
   supabase: {

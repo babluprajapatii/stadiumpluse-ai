@@ -1,10 +1,24 @@
 import type { Metadata, Viewport } from "next";
+import { Outfit, DM_Mono } from "next/font/google";
 import { getSeoMetadata } from "@/lib/seo";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import "./globals.css";
 
 import { AppProvider } from "@/providers/AppContext";
 import { AuthProvider } from "@/providers/AuthProvider";
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-outfit",
+  display: "swap",
+});
+
+const dmMono = DM_Mono({
+  weight: ["400", "500"],
+  subsets: ["latin"],
+  variable: "--font-dm-mono",
+  display: "swap",
+});
 
 export const metadata: Metadata = getSeoMetadata({
   title: "Intelligent Stadium Platform",
@@ -28,7 +42,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className="h-full antialiased"
+      className={`${outfit.variable} ${dmMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

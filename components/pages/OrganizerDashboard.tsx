@@ -10,7 +10,12 @@ import { cn } from "../ui/utils";
 import { Surface } from "../shared/Surface";
 import { MobileHeader } from "../shared/MobileHeader";
 import { BottomNav } from "../shared/BottomNav";
-import { RevenueChart } from "../widgets/RevenueChartWrapper";
+import dynamic from "next/dynamic";
+
+const RevenueChart = dynamic(() => import("../widgets/RevenueChartWrapper").then((mod) => mod.RevenueChart), {
+  ssr: false,
+  loading: () => <div className="h-[200px] w-full bg-card/50 animate-pulse rounded-xl" />
+});
 
 export function OrganizerDashboard() {
   const [tasks, setTasks] = useState([

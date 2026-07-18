@@ -8,6 +8,7 @@ import { Label } from "../ui/label";
 import { useAuth } from "@/providers/AuthProvider";
 import type { Navigate, PageId } from "@/types";
 import { getErrorMessage } from "../ui/utils";
+import Image from "next/image";
 
 export function ProfilePage({ navigate }: { navigate: Navigate }) {
   const { user, updateProfile } = useAuth();
@@ -156,8 +157,7 @@ export function ProfilePage({ navigate }: { navigate: Navigate }) {
             {/* Avatar Preview */}
             <div className="relative w-24 h-24 rounded-full border border-border bg-sidebar flex items-center justify-center overflow-hidden mb-4 group">
               {avatar ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={avatar} alt="Profile photo preview" className="w-full h-full object-cover" />
+                <Image src={avatar} alt="Profile photo preview" width={96} height={96} className="w-full h-full object-cover" unoptimized />
               ) : (
                 <span className="text-2xl font-bold text-sidebar-accent-foreground/75 select-none">
                   {getInitials()}

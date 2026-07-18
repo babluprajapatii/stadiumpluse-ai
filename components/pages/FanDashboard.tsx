@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
   Search, Star, Ticket, User, ArrowRight,
@@ -13,7 +15,12 @@ import { SectionHeading } from "../shared/SectionHeading";
 import { MobileHeader } from "../shared/MobileHeader";
 import { BottomNav } from "../shared/BottomNav";
 
-import { AttendanceChart } from "../widgets/AttendanceChartWrapper";
+import dynamic from "next/dynamic";
+
+const AttendanceChart = dynamic(() => import("../widgets/AttendanceChartWrapper").then((mod) => mod.AttendanceChart), {
+  ssr: false,
+  loading: () => <div className="h-[200px] w-full bg-card/50 animate-pulse rounded-xl" />
+});
 
 export function FanDashboard() {
 

@@ -99,6 +99,10 @@ test.describe("StadiumPulse AI E2E Flows", () => {
         body: JSON.stringify({}),
       });
     });
+
+    page.on("console", (msg) => {
+      console.log(`[Browser Console] ${msg.type()}: ${msg.text()}`);
+    });
   });
 
   test("Register, Login, Role Routing, Settings, Notifications, and Logout", async ({ page }) => {

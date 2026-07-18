@@ -9,7 +9,6 @@ import { SecurityDashboard } from "@/components/pages/SecurityDashboard";
 import { AppProvider } from "@/providers/AppContext";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { User } from "@/providers/AuthProvider";
-import { AuthService } from "@/services/auth";
 
 // --- Mocks ---
 const mockNavigate = vi.fn();
@@ -121,14 +120,16 @@ describe("Page Components Integration Tests", () => {
 
   // 4. Dashboards
   describe("Dashboards", () => {
-    it("renders Fan and Security dashboards successfully", () => {
+    it("renders Fan and Security dashboards successfully", async () => {
       render(
         <AppProvider>
           <FanDashboard />
         </AppProvider>
       );
       expect(screen.getByText("Jamie O.")).toBeInTheDocument();
-      expect(screen.getByTestId("mock-attendance-chart")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId("mock-attendance-chart")).toBeInTheDocument();
+      });
 
       render(
         <AppProvider>
@@ -136,7 +137,9 @@ describe("Page Components Integration Tests", () => {
         </AppProvider>
       );
       expect(screen.getByText(/Security Operations/i)).toBeInTheDocument();
-      expect(screen.getByTestId("mock-stadium-map")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId("mock-stadium-map")).toBeInTheDocument();
+      });
     });
   });
 });
