@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { api, APIClient } from "@/lib/api";
 import { StadiumService } from "@/services/stadium";
 import { AIService } from "@/services/ai";
@@ -39,9 +39,9 @@ vi.mock("@/lib/supabase", () => ({
         eq: vi.fn((col: string, val: unknown) => ({
           single: () => mockFromSelect(table, selectArgs, col, val),
           order: (...orderArgs: unknown[]) => mockFromSelect(table, selectArgs, col, val, orderArgs),
-          is: (...isArgs: unknown[]) => ({
+          is: () => ({
             resolves: vi.fn().mockResolvedValue({ error: null }),
-            then: (cb: any) => Promise.resolve({ error: null }).then(cb),
+            then: (cb: (value: { error: Error | null }) => unknown) => Promise.resolve({ error: null }).then(cb),
           }),
         })),
       })),
@@ -53,7 +53,7 @@ vi.mock("@/lib/supabase", () => ({
             select: vi.fn(() => ({
               single: () => mockFromUpdate(table, updates, col, val),
             })),
-            then: (cb: any) => Promise.resolve(mockFromUpdate(table, updates, col, val)).then(cb),
+            then: (cb: (value: unknown) => unknown) => Promise.resolve(mockFromUpdate(table, updates, col, val)).then(cb),
           };
           return chain;
         }),
@@ -61,20 +61,20 @@ vi.mock("@/lib/supabase", () => ({
       insert: vi.fn((payload: unknown) => ({
         select: vi.fn(() => ({
           single: () => mockFromInsert(table, payload),
-          then: (cb: any) => Promise.resolve(mockFromInsert(table, payload)).then(cb),
+          then: (cb: (value: unknown) => unknown) => Promise.resolve(mockFromInsert(table, payload)).then(cb),
         })),
-        then: (cb: any) => Promise.resolve({ error: null }).then(cb),
+        then: (cb: (value: { error: Error | null }) => unknown) => Promise.resolve({ error: null }).then(cb),
       })),
       delete: vi.fn(() => ({
         eq: vi.fn((col: string, val: unknown) => ({
-          eq: vi.fn((col2: string, val2: unknown) => ({
-            then: (cb: any) => Promise.resolve(mockFromDelete(table, col, val)).then(cb),
+          eq: vi.fn(() => ({
+            then: (cb: (value: unknown) => unknown) => Promise.resolve(mockFromDelete(table, col, val)).then(cb),
           })),
-          then: (cb: any) => Promise.resolve(mockFromDelete(table, col, val)).then(cb),
+          then: (cb: (value: unknown) => unknown) => Promise.resolve(mockFromDelete(table, col, val)).then(cb),
         })),
       })),
       upsert: vi.fn(() => ({
-        then: (cb: any) => Promise.resolve({ error: null }).then(cb),
+        then: (cb: (value: { error: Error | null }) => unknown) => Promise.resolve({ error: null }).then(cb),
       })),
     })),
   },
@@ -188,7 +188,7 @@ describe("Comprehensive Services & API Tests", () => {
 
     it("returns api gates successfully", async () => {
       const gates = [{ name: "Z", value: 40, color: "green", open: true }];
-      const spyGet = vi.spyOn(api, "get").mockResolvedValueOnce(gates);
+      vi.spyOn(api, "get").mockResolvedValueOnce(gates);
 
       const res = await StadiumService.getGates();
       expect(res).toEqual(gates);
@@ -212,7 +212,7 @@ describe("Comprehensive Services & API Tests", () => {
 
     it("returns food court menu items", async () => {
       const menu = [{ id: "m5", name: "Soda", price: 3.5, description: "Cold fizzy drink", estimatedMinutes: 1, category: "drink", available: true, image: "/soda.png" }];
-      const spyGet = vi.spyOn(api, "get").mockResolvedValueOnce(menu);
+      vi.spyOn(api, "get").mockResolvedValueOnce(menu);
 
       const res = await StadiumService.getFoodMenu();
       expect(res).toEqual(menu);
@@ -239,7 +239,7 @@ describe("Comprehensive Services & API Tests", () => {
   describe("AIService", () => {
     it("returns genai recommendations successfully", async () => {
       const recs = [{ id: "temp", label: "Temp", status: "fine", detail: "ok", priority: "low", confidence: 95, action: "none", actionLabel: "Ok" }];
-      const spyGet = vi.spyOn(api, "get").mockResolvedValueOnce(recs);
+      vi.spyOn(api, "get").mockResolvedValueOnce(recs);
 
       const res = await AIService.getRecommendations();
       expect(res).toEqual(recs);
@@ -649,7 +649,7 @@ describe("Comprehensive Services & API Tests", () => {
     });
 
     it("handles db exceptions inside saveSettings upsert", async () => {
-      const mockUpsert = vi.spyOn(supabase.from("settings"), "upsert").mockImplementationOnce(() => { throw new Error("Upsert crash"); });
+      vi.spyOn(supabase.from("settings"), "upsert").mockImplementationOnce(() => { throw new Error("Upsert crash"); });
       await expect(SettingsService.saveSettings(userId, DEFAULT_SETTINGS)).resolves.not.toThrow();
     });
 
