@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { X, Zap } from "lucide-react";
@@ -45,6 +45,18 @@ export function Sidebar({ sidebarOpen, onClose }: SidebarProps) {
   const { user, logout } = useAuth();
   const { setEmergency } = useApp();
   const [showConfirm, setShowConfirm] = useState(false);
+
+  // Close on Escape key press (on mobile)
+  useEffect(() => {
+    if (!sidebarOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [sidebarOpen, onClose]);
 
   const getMenuItems = (): MenuItem[] => {
     if (!user) return [];

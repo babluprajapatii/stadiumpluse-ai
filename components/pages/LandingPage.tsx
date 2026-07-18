@@ -57,7 +57,8 @@ export function LandingPage() {
         </div>
       </nav>
 
-      <section className="px-5 pt-16 pb-12 md:px-12 md:pt-24 max-w-5xl mx-auto">
+      <main id="main-content" tabIndex={-1} className="focus:outline-none">
+        <section className="px-5 pt-16 pb-12 md:px-12 md:pt-24 max-w-5xl mx-auto">
         <LiveBadge label="FIFA World Cup 2026 · 47K live · Gate B open" className="mb-5" />
         <h1 className="text-4xl md:text-6xl font-bold text-foreground leading-[1.1] tracking-tight mb-4">
           The intelligent<br />stadium platform.
@@ -245,6 +246,7 @@ export function LandingPage() {
           </Button>
         </div>
       </section>
+    </main>
 
       <footer className="border-t border-border px-5 py-8 md:px-12" role="contentinfo">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-4">

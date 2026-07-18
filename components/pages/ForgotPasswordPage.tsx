@@ -41,7 +41,7 @@ export function ForgotPasswordPage({ navigate }: { navigate: Navigate }) {
   };
 
   return (
-    <div className="min-h-full flex flex-col md:flex-row">
+    <main id="main-content" tabIndex={-1} className="min-h-full flex flex-col md:flex-row focus:outline-none">
       {/* Left Panel */}
       <div className="hidden md:flex md:w-1/2 bg-sidebar flex-col items-center justify-center p-12 min-h-full">
         <div className="max-w-xs w-full">
@@ -145,6 +145,6 @@ export function ForgotPasswordPage({ navigate }: { navigate: Navigate }) {
           )}
         </div>
       </div>
-    </div>
+    </main>
   );
 }

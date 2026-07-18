@@ -109,7 +109,7 @@ export function RegisterPage({ navigate }: { navigate: Navigate }) {
   };
 
   return (
-    <div className="min-h-full flex flex-col md:flex-row">
+    <main id="main-content" tabIndex={-1} className="min-h-full flex flex-col md:flex-row focus:outline-none">
       {/* Left Panel */}
       <div className="hidden md:flex md:w-1/2 bg-sidebar flex-col items-center justify-center p-12 min-h-full">
         <div className="max-w-xs w-full">
@@ -168,9 +168,11 @@ export function RegisterPage({ navigate }: { navigate: Navigate }) {
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Alex Morgan"
                     disabled={loading}
+                    aria-invalid={!!validationErrors.name}
+                    aria-describedby={validationErrors.name ? "name-error" : undefined}
                   />
                   {validationErrors.name && (
-                    <p className="text-[10px] text-destructive">{validationErrors.name}</p>
+                    <p id="name-error" role="alert" className="text-[10px] text-destructive">{validationErrors.name}</p>
                   )}
                 </div>
 
@@ -184,9 +186,11 @@ export function RegisterPage({ navigate }: { navigate: Navigate }) {
                     placeholder="alex@stadium.com"
                     autoComplete="email"
                     disabled={loading}
+                    aria-invalid={!!validationErrors.email}
+                    aria-describedby={validationErrors.email ? "email-error" : undefined}
                   />
                   {validationErrors.email && (
-                    <p className="text-[10px] text-destructive">{validationErrors.email}</p>
+                    <p id="email-error" role="alert" className="text-[10px] text-destructive">{validationErrors.email}</p>
                   )}
                 </div>
 
@@ -225,9 +229,11 @@ export function RegisterPage({ navigate }: { navigate: Navigate }) {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     disabled={loading}
+                    aria-invalid={!!validationErrors.password}
+                    aria-describedby={validationErrors.password ? "password-error" : undefined}
                   />
                   {validationErrors.password && (
-                    <p className="text-[10px] text-destructive">{validationErrors.password}</p>
+                    <p id="password-error" role="alert" className="text-[10px] text-destructive">{validationErrors.password}</p>
                   )}
                 </div>
 
@@ -240,9 +246,11 @@ export function RegisterPage({ navigate }: { navigate: Navigate }) {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="••••••••"
                     disabled={loading}
+                    aria-invalid={!!validationErrors.confirmPassword}
+                    aria-describedby={validationErrors.confirmPassword ? "confirmPassword-error" : undefined}
                   />
                   {validationErrors.confirmPassword && (
-                    <p className="text-[10px] text-destructive">{validationErrors.confirmPassword}</p>
+                    <p id="confirmPassword-error" role="alert" className="text-[10px] text-destructive">{validationErrors.confirmPassword}</p>
                   )}
                 </div>
 
@@ -254,13 +262,15 @@ export function RegisterPage({ navigate }: { navigate: Navigate }) {
                     onChange={(e) => setAcceptTerms(e.target.checked)}
                     disabled={loading}
                     className="mt-0.5 rounded border-border text-primary focus:ring-ring cursor-pointer"
+                    aria-invalid={!!validationErrors.terms}
+                    aria-describedby={validationErrors.terms ? "terms-error" : undefined}
                   />
                   <Label htmlFor="terms" className="text-xs text-muted-foreground leading-normal font-normal cursor-pointer select-none">
                     I accept the <a href="#" className="text-primary hover:underline">Terms & Conditions</a> and <a href="#" className="text-primary hover:underline">Privacy Policy</a>.
                   </Label>
                 </div>
                 {validationErrors.terms && (
-                  <p className="text-[10px] text-destructive mt-1">{validationErrors.terms}</p>
+                  <p id="terms-error" role="alert" className="text-[10px] text-destructive mt-1">{validationErrors.terms}</p>
                 )}
 
                 <Button type="submit" className="w-full gap-2 mt-2" size="lg" disabled={loading}>
@@ -311,6 +321,6 @@ export function RegisterPage({ navigate }: { navigate: Navigate }) {
           )}
         </div>
       </div>
-    </div>
+    </main>
   );
 }

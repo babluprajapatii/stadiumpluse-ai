@@ -70,6 +70,12 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <AppProvider>
+              <a
+                href="#main-content"
+                className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2.5 focus:bg-primary focus:text-primary-foreground focus:rounded-xl focus:font-bold focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                Skip to main content
+              </a>
               <OrganizationSchema />
               <WebSiteSchema />
               <WebApplicationSchema />

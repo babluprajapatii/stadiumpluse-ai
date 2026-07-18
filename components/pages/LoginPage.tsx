@@ -49,7 +49,7 @@ export function LoginPage({ navigate }: { navigate: Navigate }) {
   };
 
   return (
-    <div className="min-h-full flex flex-col md:flex-row">
+    <main id="main-content" tabIndex={-1} className="min-h-full flex flex-col md:flex-row focus:outline-none">
       <div className="hidden md:flex md:w-1/2 bg-sidebar flex-col items-center justify-center p-12 min-h-full">
         <div className="max-w-xs w-full">
           <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center mb-6">
@@ -225,6 +225,6 @@ export function LoginPage({ navigate }: { navigate: Navigate }) {
           </p>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

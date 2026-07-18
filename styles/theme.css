@@ -15,7 +15,7 @@
   --secondary: #EFF6FF;
   --secondary-foreground: #1E40AF;
   --muted: #F1F5F9;
-  --muted-foreground: #64748B;
+  --muted-foreground: #57657A;
   --accent: #DBEAFE;
   --accent-foreground: #1D4ED8;
   --destructive: #DC2626;
@@ -64,7 +64,7 @@
   --secondary: #1A2236;
   --secondary-foreground: #93C5FD;
   --muted: #1A2236;
-  --muted-foreground: #94A3B8;
+  --muted-foreground: #9CAEC9;
   --accent: #1E3A5F;
   --accent-foreground: #93C5FD;
   --destructive: #EF4444;
@@ -247,13 +247,28 @@
   --accent-foreground: #FFFFFF !important;
 }
 
-/* Reduced Motion Override */
-.reduced-motion, .reduced-motion * {
-  animation-delay: 0s !important;
-  animation-duration: 0s !important;
+/* Reduced Motion Override (In-app class & OS preferences) */
+.reduced-motion,
+.reduced-motion * {
+  animation-delay: -1ms !important;
+  animation-duration: 1ms !important;
   animation-iteration-count: 1 !important;
-  transition-duration: 0s !important;
+  background-attachment: scroll !important;
   scroll-behavior: auto !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-delay: -1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    background-attachment: scroll !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+  }
 }
 
 /* Font scale adjustments */
@@ -265,5 +280,38 @@
 }
 .text-scale-large {
   font-size: 18px !important;
+}
+
+/* WCAG 2.2 Touch Target Compliance (44x44px expansion) */
+button,
+[role="button"],
+input[type="checkbox"],
+input[type="radio"],
+.touch-target {
+  position: relative;
+}
+
+button::after,
+[role="button"]::after,
+input[type="checkbox"]::after,
+input[type="radio"]::after,
+.touch-target::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 44px;
+  min-height: 44px;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+}
+
+/* Highly visible keyboard focus ring (WCAG 2.2 Focus Visible) */
+*:focus-visible {
+  outline: 2px solid var(--ring) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.25) !important;
 }
 
