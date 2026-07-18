@@ -4,12 +4,25 @@ export interface FetchOptions extends RequestInit {
 
 export class APIClient {
   private baseUrl: string;
+  private static requestCount: number = 0;
+  private static resetTime: number = 0;
 
   constructor(baseUrl: string = "") {
     this.baseUrl = baseUrl;
   }
 
   private async request<T>(path: string, options: FetchOptions = {}): Promise<T> {
+    // Simple client-side rate limiting / request flood prevention
+    const now = Date.now();
+    if (now > APIClient.resetTime) {
+      APIClient.requestCount = 0;
+      APIClient.resetTime = now + 60000;
+    }
+    APIClient.requestCount++;
+    if (APIClient.requestCount > 150) {
+      throw new Error("API Error [429]: Too many requests. Client rate limit exceeded.");
+    }
+
     const { params, headers, ...rest } = options;
     
     // Construct query parameters

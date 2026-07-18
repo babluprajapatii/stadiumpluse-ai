@@ -88,6 +88,9 @@ describe("Comprehensive Services & API Tests", () => {
     mockFromUpdate.mockReturnValue({ data: {}, error: null });
     mockFromInsert.mockReturnValue({ data: {}, error: null });
     mockFromDelete.mockReturnValue({ data: {}, error: null });
+    // Reset client-side rate limiting state
+    APIClient["requestCount"] = 0;
+    APIClient["resetTime"] = 0;
   });
 
   // ─── API CLIENT TESTS ───────────────────────────────────────────────────────
@@ -165,6 +168,22 @@ describe("Comprehensive Services & API Tests", () => {
 
       const client = new APIClient();
       await expect(client.delete("/fail")).rejects.toThrow("API Error [500]: Fatal Database Error");
+    });
+
+    it("enforces client-side rate limiting after 150 requests", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({}),
+      });
+
+      const client = new APIClient();
+      
+      for (let i = 0; i < 150; i++) {
+        await client.get("/throttle");
+      }
+
+      await expect(client.get("/throttle")).rejects.toThrow("Client rate limit exceeded");
     });
   });
 
