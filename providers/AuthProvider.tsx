@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { AuthService } from "@/services/auth";
 import { supabase } from "@/lib/supabase";
 
+import { setSessionCookie, clearSessionCookie } from "@/app/auth-actions";
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type UserRole = "fan" | "volunteer" | "security" | "organizer" | "operator" | "accessibility";
@@ -43,25 +45,24 @@ interface AuthContextType {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const SESSION_KEY = "stadium_session";
-const SESSION_COOKIE = "stadium_session";
 
 // ─── Storage helpers ──────────────────────────────────────────────────────────
 
-function persistSession(user: User, maxAge: number): void {
+async function persistSession(user: User, maxAge: number): Promise<void> {
   const snapshot: Partial<User> = { id: user.id, email: user.email, name: user.name, role: user.role };
   try {
     localStorage.setItem(SESSION_KEY, JSON.stringify(snapshot));
-    document.cookie = `${SESSION_COOKIE}=${encodeURIComponent(JSON.stringify({ role: user.role }))}; path=/; max-age=${maxAge}; SameSite=Lax`;
+    await setSessionCookie(user.role, maxAge);
   } catch {
     // Storage unavailable (e.g. private browsing)
   }
 }
 
-function clearSession(): void {
+async function clearSession(): Promise<void> {
   try {
     localStorage.removeItem(SESSION_KEY);
     sessionStorage.removeItem(SESSION_KEY);
-    document.cookie = `${SESSION_COOKIE}=; path=/; max-age=0; SameSite=Lax`;
+    await clearSessionCookie();
   } catch {
     // Ignore
   }
@@ -126,7 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           : undefined,
       };
       setUser(hydrated);
-      persistSession(hydrated, 604800);
+      await persistSession(hydrated, 604800);
     }
   }, []);
 
@@ -149,17 +150,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
      * Step 2: Verify the cached user with Supabase and hydrate fresh data.
      * If there is no active session, clear local state.
      */
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!mounted) return;
       if (session?.user) {
-        hydrateProfile(session.user.id, session.user.email ?? "").finally(() => {
-          if (mounted) setIsLoading(false);
-        });
+        await hydrateProfile(session.user.id, session.user.email ?? "");
+        if (mounted) setIsLoading(false);
       } else {
         // No active session — clear any stale local cache
         setUser(null);
-        clearSession();
-        setIsLoading(false);
+        await clearSession();
+        if (mounted) setIsLoading(false);
       }
     });
 
@@ -167,18 +167,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
      * Step 3: Subscribe to future auth state changes
      * (login, logout, token refresh).
      */
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
 
       if (session?.user) {
         if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
-          hydrateProfile(session.user.id, session.user.email ?? "").catch(() => {
+          try {
+            await hydrateProfile(session.user.id, session.user.email ?? "");
+          } catch {
             // Keep current user state on profile fetch failure
-          });
+          }
         }
       } else if (event === "SIGNED_OUT") {
         setUser(null);
-        clearSession();
+        await clearSession();
       }
     });
 
@@ -206,7 +208,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
 
       setUser(loggedUser);
-      persistSession(loggedUser, rememberMe ? 604800 : 86400);
+      await persistSession(loggedUser, rememberMe ? 604800 : 86400);
       return loggedUser;
     } finally {
       setIsLoading(false);
@@ -241,7 +243,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
 
       setUser(sessionUser);
-      persistSession(sessionUser, 604800);
+      await persistSession(sessionUser, 604800);
       return sessionUser;
     } finally {
       setIsLoading(false);
@@ -264,7 +266,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       lastLogin: updatedUser.lastLogin,
     };
     setUser(sessionUser);
-    persistSession(sessionUser, 604800);
+    await persistSession(sessionUser, 604800);
   }, [user]);
 
   const logout = useCallback(async (): Promise<void> => {
@@ -274,7 +276,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Non-blocking
     }
     setUser(null);
-    clearSession();
+    await clearSession();
     router.push("/");
   }, [user, router]);
 

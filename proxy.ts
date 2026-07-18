@@ -40,23 +40,9 @@ const AUTH_ONLY_PATHS = [
   "/verify-email",
 ] as const;
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+import { verifyRole } from "@/lib/crypto";
 
-function getUserRole(request: NextRequest): UserRole | null {
-  const sessionCookie = request.cookies.get("stadium_session");
-  if (!sessionCookie?.value) return null;
-  try {
-    const decoded = decodeURIComponent(sessionCookie.value);
-    const parsed = JSON.parse(decoded) as { role?: string };
-    const role = parsed?.role ?? "";
-    if ((ROLE_ROUTES as readonly string[]).includes(role)) {
-      return role as UserRole;
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
+const COOKIE_SECRET = process.env.COOKIE_SECRET || "fallback-secure-stadium-cookie-secret-key-2026";
 
 function addSecurityHeaders(response: NextResponse): NextResponse {
   response.headers.set("X-Content-Type-Options", "nosniff");
@@ -67,11 +53,37 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
   return response;
 }
 
+async function getUserRole(request: NextRequest): Promise<UserRole | null> {
+  const sessionCookie = request.cookies.get("stadium_session");
+  if (!sessionCookie?.value) return null;
+  try {
+    const decoded = decodeURIComponent(sessionCookie.value);
+    const parsed = JSON.parse(decoded) as { role?: string; signature?: string };
+    const role = parsed?.role ?? "";
+    const signature = parsed?.signature ?? "";
+    
+    if (!(ROLE_ROUTES as readonly string[]).includes(role)) {
+      return null;
+    }
+
+    // Verify cryptographic signature
+    const isValid = await verifyRole(role, signature, COOKIE_SECRET);
+    if (!isValid) {
+      console.warn(`[Security Alert] Session cookie signature mismatch for role: ${role}`);
+      return null;
+    }
+
+    return role as UserRole;
+  } catch {
+    return null;
+  }
+}
+
 // ─── Main proxy function ──────────────────────────────────────────────────────
 
-export function proxy(request: NextRequest): NextResponse {
+export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
-  const userRole = getUserRole(request);
+  const userRole = await getUserRole(request);
 
   // 1. Redirect authenticated users away from auth/landing pages to their dashboard
   if ((AUTH_ONLY_PATHS as readonly string[]).includes(pathname) && userRole) {
