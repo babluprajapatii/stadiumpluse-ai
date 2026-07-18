@@ -95,3 +95,167 @@ export function BreadcrumbSchema({ items }: { items: BreadcrumbItem[] }) {
   };
   return <JsonLd data={schema} />;
 }
+
+export interface FAQItem {
+  question: string;
+  answer: string;
+}
+
+export function FAQPageSchema({ items }: { items: FAQItem[] }) {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": items.map((item) => ({
+      "@type": "Question",
+      "name": item.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": item.answer
+      }
+    }))
+  };
+  return <JsonLd data={schema} />;
+}
+
+export interface SportsEventProps {
+  name: string;
+  startDate: string;
+  endDate?: string;
+  locationName: string;
+  locationAddress: string;
+  description: string;
+  homeTeam: string;
+  awayTeam: string;
+}
+
+export function SportsEventSchema(props: SportsEventProps) {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "SportsEvent",
+    "name": props.name,
+    "startDate": props.startDate,
+    ...(props.endDate ? { "endDate": props.endDate } : {}),
+    "description": props.description,
+    "location": {
+      "@type": "Place",
+      "name": props.locationName,
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": props.locationAddress,
+        "addressLocality": "Los Angeles",
+        "addressRegion": "CA",
+        "postalCode": "90015",
+        "addressCountry": "US"
+      }
+    },
+    "competitor": [
+      {
+        "@type": "SportsTeam",
+        "name": props.homeTeam
+      },
+      {
+        "@type": "SportsTeam",
+        "name": props.awayTeam
+      }
+    ],
+    "organizer": {
+      "@type": "Organization",
+      "name": "FIFA",
+      "url": "https://www.fifa.com"
+    }
+  };
+  return <JsonLd data={schema} />;
+}
+
+export interface HowToStep {
+  name: string;
+  text: string;
+  url?: string;
+  image?: string;
+}
+
+export interface HowToProps {
+  name: string;
+  description: string;
+  steps: HowToStep[];
+}
+
+export function HowToSchema(props: HowToProps) {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": props.name,
+    "description": props.description,
+    "step": props.steps.map((step, index) => ({
+      "@type": "HowToStep",
+      "position": index + 1,
+      "name": step.name,
+      "text": step.text,
+      ...(step.url ? { "url": step.url } : {}),
+      ...(step.image ? { "image": step.image } : {})
+    }))
+  };
+  return <JsonLd data={schema} />;
+}
+
+export interface ReviewProps {
+  itemReviewedName: string;
+  authorName: string;
+  reviewRatingValue: number;
+  bestRating?: number;
+  worstRating?: number;
+  reviewBody: string;
+  publisherName?: string;
+}
+
+export function ReviewSchema(props: ReviewProps) {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "Review",
+    "itemReviewed": {
+      "@type": "Thing",
+      "name": props.itemReviewedName
+    },
+    "author": {
+      "@type": "Person",
+      "name": props.authorName
+    },
+    "reviewRating": {
+      "@type": "Rating",
+      "ratingValue": props.reviewRatingValue,
+      "bestRating": props.bestRating || 5,
+      "worstRating": props.worstRating || 1
+    },
+    "reviewBody": props.reviewBody,
+    ...(props.publisherName ? {
+      "publisher": {
+        "@type": "Organization",
+        "name": props.publisherName
+      }
+    } : {})
+  };
+  return <JsonLd data={schema} />;
+}
+
+export interface VideoObjectProps {
+  name: string;
+  description: string;
+  thumbnailUrl: string[];
+  uploadDate: string;
+  contentUrl?: string;
+  embedUrl?: string;
+}
+
+export function VideoObjectSchema(props: VideoObjectProps) {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "VideoObject",
+    "name": props.name,
+    "description": props.description,
+    "thumbnailUrl": props.thumbnailUrl,
+    "uploadDate": props.uploadDate,
+    ...(props.contentUrl ? { "contentUrl": props.contentUrl } : {}),
+    ...(props.embedUrl ? { "embedUrl": props.embedUrl } : {})
+  };
+  return <JsonLd data={schema} />;
+}

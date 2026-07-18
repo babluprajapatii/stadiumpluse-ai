@@ -6,6 +6,7 @@ import { Label } from "../ui/label";
 import { cn, getErrorMessage } from "../ui/utils";
 import type { Navigate, PageId } from "@/types";
 import { useAuth } from "@/providers/AuthProvider";
+import { PageSchema } from "../seo/PageSchema";
 
 export function LoginPage({ navigate }: { navigate: Navigate }) {
   const [role, setRole] = useState("fan");
@@ -50,6 +51,12 @@ export function LoginPage({ navigate }: { navigate: Navigate }) {
 
   return (
     <main id="main-content" tabIndex={-1} className="min-h-full flex flex-col md:flex-row focus:outline-none">
+      <PageSchema
+        breadcrumbs={[
+          { name: "Home", item: "https://stadiumpulse.ai" },
+          { name: "Login", item: "https://stadiumpulse.ai/login" }
+        ]}
+      />
       <div className="hidden md:flex md:w-1/2 bg-sidebar flex-col items-center justify-center p-12 min-h-full">
         <div className="max-w-xs w-full">
           <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center mb-6">

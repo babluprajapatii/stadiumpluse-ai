@@ -6,6 +6,7 @@ import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { LiveBadge } from "../ui/live-badge";
 import { Surface } from "../shared/Surface";
+import { FAQPageSchema, SportsEventSchema, HowToSchema, ReviewSchema, VideoObjectSchema } from "@/components/seo/JsonLd";
 
 /**
  * Public landing page — no authentication required.
@@ -270,6 +271,61 @@ export function LandingPage() {
           <p className="text-[10px] text-muted-foreground/60">© 2026 StadiumPulse AI, Inc.</p>
         </div>
       </footer>
+      <FAQPageSchema
+        items={[
+          {
+            question: "How do I check live crowd density?",
+            answer: "Go to the operator or security dashboard to see gate occupancy and flow rates."
+          },
+          {
+            question: "Where can I order food in the stadium?",
+            answer: "Open the Fan Dashboard, go to 'Food', and order from nearby concessions."
+          },
+          {
+            question: "What accessibility features are supported?",
+            answer: "We support screen readers, text scaling, high-contrast layouts, and motion-reduction controls."
+          }
+        ]}
+      />
+      <SportsEventSchema
+        name="FIFA World Cup 2026 - Opening Match"
+        startDate="2026-06-11T18:00:00-05:00"
+        locationName="MetLife Stadium"
+        locationAddress="1 MetLife Stadium Dr, East Rutherford, NJ 07773"
+        description="Opening match of the FIFA World Cup 2026."
+        homeTeam="United States"
+        awayTeam="TBD"
+      />
+      <HowToSchema
+        name="How to use the StadiumPulse AI fan dashboard"
+        description="Step by step guide to order food and request support."
+        steps={[
+          {
+            name: "Log in",
+            text: "Enter your fan credentials."
+          },
+          {
+            name: "Select Concessions",
+            text: "Tap the Order Food card."
+          },
+          {
+            name: "Place Order",
+            text: "Submit your selection."
+          }
+        ]}
+      />
+      <ReviewSchema
+        itemReviewedName="StadiumPulse AI Platform"
+        authorName="Sarah Jenkins"
+        reviewRatingValue={5}
+        reviewBody="The real-time queue times saved me 20 minutes when ordering food during halftime! An absolute game changer for stadiums."
+      />
+      <VideoObjectSchema
+        name="StadiumPulse AI Platform Walkthrough"
+        description="Interactive demonstration of real-time crowd routing and dispatch systems."
+        thumbnailUrl={["https://stadiumpulse.ai/og-image.png"]}
+        uploadDate="2026-07-16T12:00:00Z"
+      />
     </div>
   );
 }
