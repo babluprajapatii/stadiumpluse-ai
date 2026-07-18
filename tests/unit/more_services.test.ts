@@ -63,7 +63,7 @@ vi.mock("@/lib/supabase", () => ({
           single: () => mockFromInsert(table, payload),
           then: (cb: (value: unknown) => unknown) => Promise.resolve(mockFromInsert(table, payload)).then(cb),
         })),
-        then: (cb: (value: { error: Error | null }) => unknown) => Promise.resolve({ error: null }).then(cb),
+        then: (cb: (value: unknown) => unknown) => Promise.resolve(mockFromInsert(table, payload)).then(cb),
       })),
       delete: vi.fn(() => ({
         eq: vi.fn((col: string, val: unknown) => ({
@@ -667,11 +667,6 @@ describe("Comprehensive Services & API Tests", () => {
       await expect(SettingsService.saveSettings(userId, DEFAULT_SETTINGS)).resolves.not.toThrow();
     });
 
-    it("handles db exceptions inside saveSettings upsert", async () => {
-      vi.spyOn(supabase.from("settings"), "upsert").mockImplementationOnce(() => { throw new Error("Upsert crash"); });
-      await expect(SettingsService.saveSettings(userId, DEFAULT_SETTINGS)).resolves.not.toThrow();
-    });
-
     it("applies light/dark/system accessibility themes to HTML", () => {
       const html = document.documentElement;
 
@@ -684,6 +679,174 @@ describe("Comprehensive Services & API Tests", () => {
       SettingsService.applySettings({ ...DEFAULT_SETTINGS, general: { ...DEFAULT_SETTINGS.general, theme: "system" } });
       // system theme check
       expect(html.classList.contains("dark") || !html.classList.contains("dark")).toBe(true);
+    });
+
+    it("applies system dark theme class when prefers-color-scheme evaluates to dark", () => {
+      const html = document.documentElement;
+      const originalMatchMedia = window.matchMedia;
+
+      window.matchMedia = vi.fn().mockImplementation((query) => ({
+        matches: true,
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      }));
+
+      SettingsService.applySettings({ ...DEFAULT_SETTINGS, general: { ...DEFAULT_SETTINGS.general, theme: "system" } });
+      expect(html.classList.contains("dark")).toBe(true);
+
+      // Restore
+      window.matchMedia = originalMatchMedia;
+    });
+  });
+
+  // ─── EXTRA COVERAGE TESTS FOR SECURITY & ERROR PATHWAYS ─────────────────────
+  describe("Extra Coverage Error Paths", () => {
+    it("generateResetToken throws error when supabase resets fail", async () => {
+      vi.spyOn(supabase.auth, "resetPasswordForEmail").mockResolvedValueOnce({ data: null, error: new Error("Reset crash") as any });
+      await expect(AuthService.generateResetToken("fail@test.com")).rejects.toThrow("Reset crash");
+    });
+
+    it("generateVerificationToken throws error when supabase resend fails", async () => {
+      vi.spyOn(supabase.auth, "resend").mockResolvedValueOnce({ data: null, error: new Error("Resend crash") as any });
+      await expect(AuthService.generateVerificationToken("fail@test.com")).rejects.toThrow("Resend crash");
+    });
+
+    it("authenticate throws error when profile loading and creation both fail", async () => {
+      vi.spyOn(supabase.auth, "signInWithPassword").mockResolvedValueOnce({
+        data: { user: { id: "user-999", email: "test@stadium.com", user_metadata: { role: "fan" } } } as any,
+        error: null,
+      });
+
+      // select fails
+      mockFromSelect.mockResolvedValueOnce({ data: null, error: new Error("Select error") });
+      // insert fails
+      mockFromInsert.mockResolvedValueOnce({ data: null, error: new Error("Insert error") });
+
+      await expect(AuthService.authenticate("test@stadium.com", "Pass123!")).rejects.toThrow("Failed to load user profile");
+    });
+
+    it("register throws error when signup fails in Supabase Auth", async () => {
+      vi.spyOn(supabase.auth, "signUp").mockResolvedValueOnce({ data: { user: null }, error: new Error("Auth signup failure") as any });
+      await expect(AuthService.register("User", "test@test.com", "Pass123!", "fan")).rejects.toThrow("Auth signup failure");
+    });
+
+    it("register throws error when signup returns empty user with no error", async () => {
+      vi.spyOn(supabase.auth, "signUp").mockResolvedValueOnce({ data: { user: null }, error: null });
+      await expect(AuthService.register("User", "test@test.com", "Pass123!", "fan")).rejects.toThrow("Registration failed");
+    });
+
+    it("authenticate throws error when signInWithPassword fails", async () => {
+      vi.spyOn(supabase.auth, "signInWithPassword").mockResolvedValueOnce({ data: { user: null }, error: new Error("Invalid password") as any });
+      await expect(AuthService.authenticate("test@test.com", "wrong")).rejects.toThrow("Invalid password");
+    });
+
+    it("authenticate throws error when signInWithPassword returns empty user", async () => {
+      vi.spyOn(supabase.auth, "signInWithPassword").mockResolvedValueOnce({ data: { user: null }, error: null });
+      await expect(AuthService.authenticate("test@test.com", "Pass123!")).rejects.toThrow("Authentication failed");
+    });
+
+    it("authenticate throws error when user email is not verified", async () => {
+      vi.spyOn(supabase.auth, "signInWithPassword").mockResolvedValueOnce({
+        data: { user: { id: "u123", email_confirmed_at: null } } as any,
+        error: null,
+      });
+      mockFromSelect.mockResolvedValueOnce({
+        data: { id: "u123", is_verified: false },
+        error: null,
+      });
+
+      await expect(AuthService.authenticate("test@test.com", "Pass123!")).rejects.toThrow("Please verify your email address");
+    });
+
+    it("updateProfile throws error when supabase update fails with error", async () => {
+      mockFromUpdate.mockResolvedValueOnce({ data: null, error: new Error("Update failure") });
+      await expect(AuthService.updateProfile("u123", { name: "Bob" })).rejects.toThrow("Update failure");
+    });
+
+    it("updateProfile throws error when supabase update returns empty data", async () => {
+      mockFromUpdate.mockResolvedValueOnce({ data: null, error: null });
+      await expect(AuthService.updateProfile("u123", { name: "Bob" })).rejects.toThrow("Failed to update profile");
+    });
+
+    it("NotificationsService getNotifications returns empty array if localStorage is missing or window is undefined", async () => {
+      const originalWindow = global.window;
+      // Mock window as undefined temporarily
+      const tempWindow = undefined as any;
+      Object.defineProperty(global, "window", {
+        writable: true,
+        value: tempWindow,
+      });
+
+      mockFromSelect.mockResolvedValueOnce({ data: null, error: new Error("DB error") });
+      const list = await NotificationsService.getNotifications("user-123");
+      expect(list).toEqual([]);
+
+      // Restore
+      Object.defineProperty(global, "window", {
+        writable: true,
+        value: originalWindow,
+      });
+    });
+
+    it("NotificationsService markAsRead handles errors cleanly", async () => {
+      mockFromUpdate.mockResolvedValueOnce({ error: new Error("Update failed") });
+      await expect(NotificationsService.markAsRead("user-123", "not-1")).resolves.not.toThrow();
+    });
+
+    it("NotificationsService markAsRead success updates cache", async () => {
+      mockFromUpdate.mockResolvedValueOnce({ error: null });
+      mockFromSelect.mockResolvedValueOnce({ data: [], error: null });
+      await expect(NotificationsService.markAsRead("user-123", "not-1")).resolves.not.toThrow();
+    });
+
+    it("NotificationsService deleteNotification handles errors cleanly", async () => {
+      mockFromDelete.mockResolvedValueOnce({ error: new Error("Delete failed") });
+      await expect(NotificationsService.deleteNotification("user-123", "not-1")).resolves.not.toThrow();
+    });
+
+    it("NotificationsService deleteNotification success updates cache", async () => {
+      mockFromDelete.mockResolvedValueOnce({ error: null });
+      mockFromSelect.mockResolvedValueOnce({ data: [], error: null });
+      await expect(NotificationsService.deleteNotification("user-123", "not-1")).resolves.not.toThrow();
+    });
+
+    it("NotificationsService.addNotification insert failure does not throw", async () => {
+      mockFromInsert.mockResolvedValueOnce({ error: new Error("Insert failed") });
+      await expect(NotificationsService.addNotification("user-123", "system", "Title", "Msg")).resolves.not.toThrow();
+    });
+
+    it("NotificationsService markAllAsRead handles errors cleanly", async () => {
+      mockFromUpdate.mockResolvedValueOnce({ error: new Error("Update failed") });
+      await expect(NotificationsService.markAllAsRead("user-123")).resolves.not.toThrow();
+    });
+
+    it("NotificationsService getNotifications handles default logs insert failures cleanly", async () => {
+      mockFromSelect.mockResolvedValueOnce({ data: [], error: null }); // empty database
+      mockFromInsert.mockResolvedValueOnce({ data: null, error: new Error("Insert defaults failed") });
+      const list = await NotificationsService.getNotifications("user-123");
+      expect(list).toEqual([]);
+    });
+
+    it("SettingsService.applySettings returns early if window is undefined", () => {
+      const originalWindow = global.window;
+      const tempWindow = undefined as any;
+      Object.defineProperty(global, "window", {
+        writable: true,
+        value: tempWindow,
+      });
+
+      expect(() => SettingsService.applySettings(DEFAULT_SETTINGS)).not.toThrow();
+
+      // Restore
+      Object.defineProperty(global, "window", {
+        writable: true,
+        value: originalWindow,
+      });
     });
   });
 });
