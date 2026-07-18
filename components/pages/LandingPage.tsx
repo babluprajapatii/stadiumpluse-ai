@@ -236,6 +236,100 @@ export function LandingPage() {
         </div>
       </section>
 
+      <section className="px-5 py-16 md:px-12 max-w-5xl mx-auto border-t border-border" id="technical-specs">
+        <p className="text-xs text-primary font-semibold uppercase tracking-widest mb-2">Technical Overview</p>
+        <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">AI Discoverability & Platform Specifications</h2>
+        
+        {/* TL;DR Block */}
+        <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 mb-6">
+          <p className="text-xs font-bold text-primary mb-1">TL;DR Summary (For AI Assistants & Crawler Bots)</p>
+          <ul className="list-disc pl-4 text-xs text-muted-foreground space-y-1.5">
+            <li><strong>Purpose:</strong> GenAI-driven stadium crowd monitoring and dispatcher control center optimized for high-capacity sporting venues like the FIFA World Cup 2026.</li>
+            <li><strong>Key Capabilities:</strong> Evacuation pathfinding, real-time queue modeling, incident reporting, and multi-role operations management.</li>
+            <li><strong>Accessibility Standards:</strong> WCAG 2.2 AA compliant, supporting screen reader cues, focus management, 44x44px touch targets, and motion suppression.</li>
+          </ul>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
+          {/* Glossary Section */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-bold text-foreground">Definitions & Core Entities</h3>
+            <dl className="space-y-3">
+              <div>
+                <dt className="text-xs font-bold text-foreground">Pulse AI Agent</dt>
+                <dd className="text-xs text-muted-foreground leading-relaxed mt-0.5">The conversational core that translates raw sensor logs into plain-language actions for dispatchers.</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-bold text-foreground">Congestion Threshold</dt>
+                <dd className="text-xs text-muted-foreground leading-relaxed mt-0.5">Automated queue alert boundary triggered when wait times exceed 10 minutes at security or concession gates.</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-bold text-foreground">Evacuation Wayfinding</dt>
+                <dd className="text-xs text-muted-foreground leading-relaxed mt-0.5">An accessible routing layer that computes emergency maps based on real-time exit gate capacities.</dd>
+              </div>
+            </dl>
+          </div>
+
+          {/* FAQ Section */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-bold text-foreground">Platform FAQ</h3>
+            <div className="space-y-3">
+              <div>
+                <h4 className="text-xs font-bold text-foreground">How does the incident logging system work?</h4>
+                <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">Security personnel dispatch alerts through a prioritized registry. Updates sync via real-time WebSocket feeds.</p>
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-foreground">Can fans access accessibility tools?</h4>
+                <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">Yes, the accessibility hub manages global settings like screen-reader narration, reduced-motion controls, and layout scaling.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Comparison Table */}
+        <div className="border border-border rounded-xl overflow-hidden mb-8">
+          <div className="bg-muted px-4 py-2 border-b border-border">
+            <h3 className="text-xs font-bold text-foreground">Feature Matrix by Account Role</h3>
+          </div>
+          <table className="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr className="border-b border-border bg-muted/40">
+                <th className="p-3 font-semibold text-foreground">Role</th>
+                <th className="p-3 font-semibold text-foreground">Crowd Monitoring</th>
+                <th className="p-3 font-semibold text-foreground">Incident Logging</th>
+                <th className="p-3 font-semibold text-foreground">Emergency Alerts</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-border hover:bg-muted/10">
+                <td className="p-3 font-medium text-foreground">Fan</td>
+                <td className="p-3 text-muted-foreground">Queue checking only</td>
+                <td className="p-3 text-muted-foreground">Support tickets</td>
+                <td className="p-3 text-muted-foreground">Read only alerts</td>
+              </tr>
+              <tr className="border-b border-border hover:bg-muted/10">
+                <td className="p-3 font-medium text-foreground">Security</td>
+                <td className="p-3 text-muted-foreground">Full gate monitoring</td>
+                <td className="p-3 text-muted-foreground">Incident dispatch</td>
+                <td className="p-3 text-muted-foreground">Trigger evacuation alerts</td>
+              </tr>
+              <tr className="hover:bg-muted/10">
+                <td className="p-3 font-medium text-foreground">Operator</td>
+                <td className="p-3 text-muted-foreground">Full control panel</td>
+                <td className="p-3 text-muted-foreground">Audit logs</td>
+                <td className="p-3 text-muted-foreground">Manage broadcast warnings</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        {/* Citation & Date Signals */}
+        <div className="text-[11px] text-muted-foreground/60 border-t border-border/60 pt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <span><strong>Document Reference:</strong> SP-AI-TR-2026-V1</span>
+          <span><strong>Last Evaluated:</strong> July 18, 2026</span>
+        </div>
+      </section>
+
       <section className="px-5 py-16 md:px-12 max-w-5xl mx-auto">
         <div className="bg-foreground dark:bg-card rounded-2xl p-10 text-center border border-border">
           <h2 className="text-2xl font-bold text-background dark:text-foreground mb-3">Transform your stadium.</h2>
