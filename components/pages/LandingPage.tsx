@@ -391,6 +391,66 @@ export function LandingPage() {
           <Link href="/register" className="text-primary hover:underline font-medium">Registration Center</Link>
           <Link href="/forgot-password" className="text-primary hover:underline font-medium">Identity Recovery</Link>
         </div>
+
+        {/* Social Share & Profile Connections */}
+        <div className="mt-6 pt-4 border-t border-border/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="text-[11px] font-bold text-foreground">Share:</span>
+            <div className="flex items-center gap-2">
+              <a
+                href="https://x.com/intent/post?text=Check%20out%20StadiumPulse%20AI%20-%20The%20GenAI-powered%20smart%20stadium%20platform%20for%20FIFA%20World%20Cup%202026!&url=https://stadiumpulse.ai"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Share on X (Twitter)"
+                className="px-2.5 py-1 bg-muted hover:bg-muted/80 text-foreground text-[10px] rounded border border-border font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                X / Twitter
+              </a>
+              <a
+                href="https://www.linkedin.com/sharing/share-offsite/?url=https://stadiumpulse.ai"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Share on LinkedIn"
+                className="px-2.5 py-1 bg-muted hover:bg-muted/80 text-foreground text-[10px] rounded border border-border font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                LinkedIn
+              </a>
+              <a
+                href="https://api.whatsapp.com/send?text=Check%20out%20StadiumPulse%20AI%20-%20The%20GenAI-powered%20smart%20stadium%20platform%20for%20FIFA%20World%20Cup%202026!%20https://stadiumpulse.ai"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Share on WhatsApp"
+                className="px-2.5 py-1 bg-muted hover:bg-muted/80 text-foreground text-[10px] rounded border border-border font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                WhatsApp
+              </a>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-[11px] font-bold text-foreground">Follow Us:</span>
+            <div className="flex items-center gap-2">
+              <a
+                href="https://x.com/StadiumPulseAI"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Follow StadiumPulse AI on X"
+                className="text-[11px] text-primary hover:underline font-medium"
+              >
+                @StadiumPulseAI
+              </a>
+              <span className="text-muted-foreground/30">•</span>
+              <a
+                href="https://github.com/babluprajapatii/stadiumpluse-ai"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="StadiumPulse AI GitHub repository"
+                className="text-[11px] text-primary hover:underline font-medium"
+              >
+                GitHub Repo
+              </a>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section className="px-5 py-16 md:px-12 max-w-5xl mx-auto">
