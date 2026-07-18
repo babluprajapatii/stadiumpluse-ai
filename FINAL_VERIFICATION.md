@@ -87,59 +87,50 @@ This report presents verified verification checks for the **StadiumPulse AI** pl
 
 ---
 
-## 6. Lighthouse Report Summary (Local Simulation)
+## 6. Lighthouse Report
 
-- **Status:** **PASS**
-- **Evidence:** Computed from local build file sizes and static page rendering structures:
-  - **Performance:** **98/100** (Code-split charts and maps reduce JS execution on load).
-  - **Accessibility:** **100/100** (Full keyboard focus rings, 44x44px target margins, skip link landmarks).
-  - **Best Practices:** **100/100** (HTTPS-ready security headers, HTTP-only cookie wrappers).
-  - **SEO:** **100/100** (Desc metadata, canonical link alternates, 9 structured schemas).
-- **Recommendation:** Ensure server compression is active in hosting environments.
-
----
-
-## 7. PageSpeed Core Metrics
-
-- **Status:** **PASS**
-- **First Contentful Paint (FCP):** **0.7s** (verified via static HTML output metrics).
-- **Largest Contentful Paint (LCP):** **1.2s** (below the 2.5s threshold).
-- **Total Blocking Time (TBT):** **45ms** (exceeds the 150ms limit).
-- **Cumulative Layout Shift (CLS):** **0.02** (font display swap prevents flashes).
-- **Recommendation:** None.
+- **Status:** Not independently executed in this verification.
+- **Evidence:** The application incorporates optimizations commonly associated with high Lighthouse scores, including:
+  - Code splitting
+  - Dynamic imports
+  - Optimized metadata
+  - Structured data
+  - Accessibility improvements
+  - Security headers
+- **Recommendation:** Run Lighthouse CLI or PageSpeed Insights against the deployed application to obtain official scores.
 
 ---
 
-## 8. Axe-Core Accessibility Check
+## 7. PageSpeed Report
 
-- **Status:** **PASS**
-- **Evidence:** Verified page structures for contrast, elements, focus styles, and touch target compliance:
-  - Text colors meet WCAG AA contrast rules (muted foreground HSL: `#57657A` / `#9CAEC9`).
-  - Active button click regions expanded using transparent pseudo-element overlays in [`styles/theme.css`](file:///d:/coding/github/stadiumpluse-ai/styles/theme.css):
-    ```css
-    button::after, [role="button"]::after {
-      content: "";
-      position: absolute;
-      min-width: 44px;
-      min-height: 44px;
-      transform: translate(-50%, -50%);
-    }
-    ```
-- **Recommendation:** None.
+- **Status:** Not independently executed in this verification.
+- **Evidence:** Page structure contains performance-best practices such as Local next/font imports, Dynamic charts split imports, and standard resource pre-loading optimizations.
+- **Recommendation:** Run PageSpeed Insights against the production deployment to analyze mobile/desktop response times under load.
 
 ---
 
-## 9. Next.js Bundle Size Report
+## 8. Axe Accessibility Report
+
+- **Status:** Not independently executed in this verification.
+- **Evidence:** Structural source review confirms:
+  - Skip navigation link is present.
+  - Interactive elements have explicit `aria-label` properties.
+  - Active button click zones are expanded to `44x44px` in [theme.css](file:///d:/coding/github/stadiumpluse-ai/styles/theme.css).
+- **Recommendation:** Run the automated axe-core browser scanner in production or devtools to verify WCAG 2.2 AA validation compliance.
+
+---
+
+## 9. Bundle Analyzer & Bundle Size Report
 
 - **Status:** **PASS**
-- **Evidence:** Captured from `npm run build` output logs:
+- **Evidence:** Compiled and analyzed bundle weights using Next.js build-time statistics output:
   - **First Load JS shared by all:** **108 kB** (highly optimized).
   - **Individual Pages:**
     - Root (`/`): **9.12 kB**
     - Login (`/login`): **8.56 kB**
     - Register (`/register`): **9.21 kB**
     - Security Dashboard (`/security`): **12.8 kB**
-- **Recommendation:** Maintain dynamic imports configuration for dashboards.
+- **Recommendation:** Maintain dynamic imports configuration for dashboards to avoid layout load blocking.
 
 ---
 
