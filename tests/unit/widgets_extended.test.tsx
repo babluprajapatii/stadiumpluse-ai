@@ -47,7 +47,11 @@ vi.mock("@/providers/AuthProvider", async (importOriginal) => {
 
 // ── Recharts mock ─────────────────────────────────────────────────────────────
 vi.mock("recharts", () => ({
-  AreaChart: ({ children }: { children: React.ReactNode }) => <div data-testid="area-chart">{children}</div>,
+  // AreaChart intentionally ignores children: if children were rendered, the
+  // <defs>/<linearGradient>/<stop> JSX written inside <AreaChart> would hit jsdom
+  // as unknown HTML elements, producing React "unrecognized tag" warnings.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  AreaChart: ({ children: _children }: { children?: React.ReactNode }) => <div data-testid="area-chart" />,
   Area: () => <div data-testid="area" />,
   ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div data-testid="responsive-container">{children}</div>,
   BarChart: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -62,9 +66,6 @@ vi.mock("recharts", () => ({
   PieChart: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   Pie: () => <div />,
   Cell: () => <div />,
-  defs: ({ children }: { children: React.ReactNode }) => <defs>{children}</defs>,
-  linearGradient: ({ children }: { children: React.ReactNode }) => <linearGradient>{children}</linearGradient>,
-  stop: () => <stop />,
 }));
 
 // ── LiveBadge mock (used by EventBanner) ─────────────────────────────────────

@@ -15,8 +15,16 @@ import { Surface } from "../shared/Surface";
 import { SectionHeading } from "../shared/SectionHeading";
 import { MobileHeader } from "../shared/MobileHeader";
 import { BottomNav } from "../shared/BottomNav";
-import { StadiumMap } from "../stadium-map";
+import dynamic from "next/dynamic";
 import { useApp } from "@/providers/AppContext";
+
+const StadiumMap = dynamic(
+  () => import("../stadium-map").then((mod) => mod.StadiumMap),
+  {
+    ssr: false,
+    loading: () => <div className="h-[300px] w-full bg-card/50 animate-pulse rounded-xl" aria-hidden="true" />,
+  }
+);
 
 export function AccessibilityHub() {
   const { setEmergency } = useApp();

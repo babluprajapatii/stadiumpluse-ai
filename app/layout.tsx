@@ -11,6 +11,8 @@ const outfit = Outfit({
   subsets: ["latin"],
   variable: "--font-outfit",
   display: "swap",
+  preload: true,
+  adjustFontFallback: true,
 });
 
 const dmMono = DM_Mono({
@@ -18,6 +20,8 @@ const dmMono = DM_Mono({
   subsets: ["latin"],
   variable: "--font-dm-mono",
   display: "swap",
+  preload: false,       // monospace only used in code blocks — don't preload
+  adjustFontFallback: true,
 });
 
 export const metadata: Metadata = getSeoMetadata({
@@ -46,6 +50,11 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        {/* DNS prefetch + preconnect for Supabase API */}
+        <link rel="dns-prefetch" href="//supabase.co" />
+        <link rel="preconnect" href="https://supabase.co" crossOrigin="anonymous" />
+        {/* Preconnect for Google Fonts (used by next/font/google) */}
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <script
           id="theme-initializer"
           suppressHydrationWarning

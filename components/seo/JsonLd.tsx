@@ -23,8 +23,8 @@ export function OrganizationSchema() {
     "logo": {
       "@type": "ImageObject",
       "url": "https://stadiumpulse.ai/icon-512x512.png",
-      "width": "512",
-      "height": "512"
+      "width": 512,
+      "height": 512
     },
     "sameAs": [
       "https://x.com/StadiumPulseAI",
@@ -44,14 +44,6 @@ export function WebSiteSchema() {
     "url": "https://stadiumpulse.ai",
     "publisher": {
       "@id": "https://stadiumpulse.ai/#organization"
-    },
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": {
-        "@type": "EntryPoint",
-        "urlTemplate": "https://stadiumpulse.ai/search?q={search_term_string}"
-      },
-      "query-input": "required name=search_term_string"
     }
   };
   return <JsonLd data={schema} />;
@@ -70,7 +62,7 @@ export function WebApplicationSchema() {
     "description": "GenAI-powered smart stadium operations, real-time crowd density estimation, incident response dispatcher, and fan navigation system.",
     "offers": {
       "@type": "Offer",
-      "price": "0",
+      "price": 0,
       "priceCurrency": "USD"
     }
   };
@@ -142,9 +134,9 @@ export function SportsEventSchema(props: SportsEventProps) {
       "address": {
         "@type": "PostalAddress",
         "streetAddress": props.locationAddress,
-        "addressLocality": "Los Angeles",
-        "addressRegion": "CA",
-        "postalCode": "90015",
+        "addressLocality": "East Rutherford",
+        "addressRegion": "NJ",
+        "postalCode": "07073",
         "addressCountry": "US"
       }
     },

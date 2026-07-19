@@ -97,9 +97,9 @@ export function ForgotPasswordPage({ navigate }: { navigate: Navigate }) {
 
               <form onSubmit={handleSendLink} className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="forgot-email">Email Address</Label>
+                  <Label htmlFor="email">Email Address</Label>
                   <Input
-                    id="forgot-email"
+                    id="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { User, Phone, Briefcase, FileText, Upload, Trash2, ShieldCheck, Calendar, Key, AlertTriangle, CheckCircle, Clock } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -20,6 +20,21 @@ export function ProfilePage({ navigate }: { navigate: Navigate }) {
   const [organization, setOrganization] = useState(user?.organization || "");
   const [bio, setBio] = useState(user?.bio || "");
   const [avatar, setAvatar] = useState(user?.avatar || "");
+
+  // Hydrate editable fields once the user object is available. The AuthProvider
+  // initialises user as null (hydration fix) and populates it after mount, so
+  // the useState initialisers above run with null and would leave fields empty.
+  // This mirrors the established hydration pattern used in AuthProvider/SettingsPage.
+  useEffect(() => {
+    if (user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setName(user.name || "");
+      setPhone(user.phone || "");
+      setOrganization(user.organization || "");
+      setBio(user.bio || "");
+      setAvatar(user.avatar || "");
+    }
+  }, [user]);
 
   // UI state
   const [loading, setLoading] = useState(false);

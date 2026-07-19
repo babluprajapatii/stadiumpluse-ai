@@ -29,18 +29,49 @@ const nextConfig: NextConfig = {
   // Security: prevent exposing the X-Powered-By header
   poweredByHeader: false,
 
-  // Compress responses
+  // Compress responses (gzip/brotli)
   compress: true,
 
   // Experimental features for performance
   experimental: {
-    // Optimize package imports for commonly used icon libraries
-    optimizePackageImports: ["lucide-react", "recharts"],
+    // Optimize package imports — tree-shake barrel exports
+    optimizePackageImports: [
+      "lucide-react",
+      "recharts",
+      "@radix-ui/react-accordion",
+      "@radix-ui/react-avatar",
+      "@radix-ui/react-checkbox",
+      "@radix-ui/react-dialog",
+      "@radix-ui/react-dropdown-menu",
+      "@radix-ui/react-label",
+      "@radix-ui/react-popover",
+      "@radix-ui/react-progress",
+      "@radix-ui/react-slot",
+      "@radix-ui/react-switch",
+      "@radix-ui/react-tabs",
+      "@radix-ui/react-tooltip",
+      "class-variance-authority",
+    ],
+    // Client-side router cache — keep prefetched data fresh
+    staleTimes: {
+      dynamic: 30,  // seconds — dynamic routes stay cached 30s
+      static: 180,  // seconds — static routes stay cached 3 min
+    },
   },
   
-  // Custom HTTP Security Headers
+  // Custom HTTP Security & Performance Headers
   async headers() {
     return [
+      {
+        // Static assets (favicons, manifests, fonts) — cache for 1 year
+        source: "/:path(.+\\.(?:ico|png|svg|woff2?)$)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
       {
         source: "/:path*",
         headers: [

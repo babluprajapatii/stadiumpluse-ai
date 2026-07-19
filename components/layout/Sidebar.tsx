@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { X, Zap } from "lucide-react";
+import { Menu } from "lucide-react";
 import { cn } from "../ui/utils";
 import { ThemeBtn } from "../shared/ThemeBtn";
 import { useAuth } from "@/providers/AuthProvider";
@@ -130,109 +130,122 @@ export function Sidebar({ sidebarOpen, onClose }: SidebarProps) {
   return (
     <aside
       id="app-sidebar"
+      role="navigation"
       aria-label="Application navigation"
       className={cn(
         "fixed lg:relative z-50 lg:z-auto top-0 left-0 h-full w-56 bg-sidebar flex flex-col transition-transform duration-200 ease-in-out shrink-0 border-r border-sidebar-border/30",
         sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
       )}
+      tabIndex={0}
     >
       <div className="px-4 py-5 border-b border-sidebar-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <Zap size={15} className="text-white" aria-hidden="true" />
+              <Menu size={15} className="text-white" aria-hidden="true" />
             </div>
             <div>
-              <p className="font-bold text-sidebar-foreground text-sm leading-tight">StadiumPulse</p>
-              <p className="text-[9px] text-sidebar-accent-foreground/60 font-medium">FIFA WC 2026</p>
+              <p className="font-bold text-sidebar-foreground text-sm leading-tight">
+                StadiumPulse
+              </p>
+              <p className="text-[9px] text-sidebar-accent-foreground/60 font-medium">
+                FIFA WC 2026
+              </p>
             </div>
           </div>
           <button
-            className="lg:hidden p-1.5 rounded text-sidebar-accent-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
+            className="lg:hidden p-1.5 rounded text-sidebar-accent-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
             onClick={onClose}
-            aria-label="Close navigation"
+            aria-label={sidebarOpen ? "Close navigation" : "Open navigation"}
+            aria-expanded={sidebarOpen}
+            aria-controls="app-sidebar"
           >
-            <X size={15} aria-hidden="true" />
+            <Menu size={15} aria-hidden="true" />
           </button>
         </div>
-      </div>
 
-      <nav className="flex-1 overflow-y-auto py-4 px-2" aria-label="Portal navigation">
-        {menuItems.map(({ label, href, Icon, action }) => {
-          const isAct = href.startsWith("#")
-            ? false
-            : pathname.startsWith(href);
+        <nav
+          className="flex-1 overflow-y-auto py-4 px-2"
+          aria-label="Portal navigation"
+          role="menubar"
+        >
+          {menuItems.map(({ label, href, Icon, action }) => {
+            const isAct = href.startsWith("#")
+              ? false
+              : pathname.startsWith(href);
 
-          if (action) {
+            if (action) {
+              return (
+                <button
+                  key={label}
+                  onClick={() => {
+                    action();
+                    onClose();
+                  }}
+                  className={cn(
+                    "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left mb-0.5 text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring text-sidebar-accent-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent cursor-pointer touch-target",
+                  )}
+                  aria-label={label}
+                >
+                  <Icon size={12} className="shrink-0" aria-hidden="true" />
+                  {label}
+                </button>
+              );
+            }
+
             return (
-              <button
+              <Link
                 key={label}
-                onClick={() => {
-                  action();
-                  onClose();
-                }}
+                href={href}
+                onClick={onClose}
+                aria-current={isAct ? "page" : undefined}
                 className={cn(
-                  "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left mb-0.5 text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring text-sidebar-accent-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent cursor-pointer"
+                  "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left mb-0.5 text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring text-sidebar-accent-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent",
                 )}
+                aria-label={label}
               >
                 <Icon size={12} className="shrink-0" aria-hidden="true" />
                 {label}
-              </button>
+              </Link>
             );
-          }
+          })}
+        </nav>
 
-          return (
-            <Link
-              key={label}
-              href={href}
-              onClick={onClose}
-              aria-current={isAct ? "page" : undefined}
-              className={cn(
-                "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left mb-0.5 text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
-                isAct
-                  ? "bg-sidebar-accent text-sidebar-primary border-l-2 border-sidebar-primary pl-[10px]"
-                  : "text-sidebar-accent-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent"
-              )}
-            >
-              <Icon size={12} className="shrink-0" aria-hidden="true" />
-              {label}
-            </Link>
-          );
-        })}
-      </nav>
+        <div className="px-4 py-4 border-t border-sidebar-border flex items-center justify-between">
+          <p className="text-[9px] text-sidebar-accent-foreground/50">
+            StadiumPulse AI · FIFA 2026
+          </p>
+          <ThemeBtn />
+        </div>
 
-      <div className="px-4 py-4 border-t border-sidebar-border flex items-center justify-between">
-        <p className="text-[9px] text-sidebar-accent-foreground/50">StadiumPulse AI · FIFA 2026</p>
-        <ThemeBtn />
+        <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
+          <DialogContent className="max-w-[340px]">
+            <DialogHeader>
+              <DialogTitle>Sign out</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to sign out?
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex gap-2 sm:flex-row flex-col">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="flex-1 px-4 py-2 text-xs font-medium border border-border rounded-lg hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowConfirm(false);
+                  logout();
+                }}
+                className="flex-1 px-4 py-2 text-xs font-medium bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                Logout
+              </button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
-
-      <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
-        <DialogContent className="max-w-[340px]">
-          <DialogHeader>
-            <DialogTitle>Sign out</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to sign out?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="flex gap-2 sm:flex-row flex-col">
-            <button
-              onClick={() => setShowConfirm(false)}
-              className="flex-1 px-4 py-2 text-xs font-medium border border-border rounded-lg hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => {
-                setShowConfirm(false);
-                logout();
-              }}
-              className="flex-1 px-4 py-2 text-xs font-medium bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              Logout
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </aside>
   );
 }

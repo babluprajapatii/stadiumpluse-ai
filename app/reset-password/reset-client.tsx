@@ -4,6 +4,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { ResetPasswordPage } from "@/components/pages/ResetPasswordPage";
 import type { PageId } from "@/types";
 import { Suspense } from "react";
+import { PageSchema } from "@/components/seo/PageSchema";
 
 function ResetPasswordRouteContent() {
   const searchParams = useSearchParams();
@@ -23,8 +24,14 @@ function ResetPasswordRouteContent() {
 
 export default function ResetPasswordRouteClient() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-xs text-muted-foreground">Loading reset session...</div>}>
-      <ResetPasswordRouteContent />
-    </Suspense>
+    <>
+      <PageSchema breadcrumbs={[
+        { name: "Home", item: "https://stadiumpulse.ai" },
+        { name: "Reset Password", item: "https://stadiumpulse.ai/reset-password" },
+      ]} />
+      <Suspense fallback={<div className="p-8 text-center text-xs text-muted-foreground">Loading reset session...</div>}>
+        <ResetPasswordRouteContent />
+      </Suspense>
+    </>
   );
 }

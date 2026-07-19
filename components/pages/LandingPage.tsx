@@ -1,27 +1,19 @@
-"use client";
-
 import Link from "next/link";
 import { Zap, ArrowRight, Star, Shield, Activity, CheckCircle } from "lucide-react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { LiveBadge } from "../ui/live-badge";
 import { Surface } from "../shared/Surface";
-import { FAQPageSchema, SportsEventSchema, HowToSchema, ReviewSchema, VideoObjectSchema } from "@/components/seo/JsonLd";
+import { SmoothScrollNav } from "../shared/SmoothScrollNav";
+import { FAQPageSchema, SportsEventSchema, HowToSchema, ReviewSchema } from "@/components/seo/JsonLd";
 
 /**
- * Public landing page — no authentication required.
+ * Public landing page — server component.
  * All navigation uses Next.js Link for optimal prefetching and accessibility.
- * "use client" is only here for the smooth scroll handler on nav anchors.
+ * The smooth-scroll behaviour is handled by the SmoothScrollNav client island,
+ * keeping the bulk of this 30 KB component server-rendered.
  */
 export function LandingPage() {
-  const handleScroll = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
-    e.preventDefault();
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth" });
-    }
-  };
-
   return (
     <div className="bg-background min-h-full">
       <nav
@@ -37,18 +29,10 @@ export function LandingPage() {
           <Badge className="text-[9px] px-1.5 py-0 h-4">AI</Badge>
         </div>
         <div className="flex items-center gap-2">
-          <div className="hidden md:flex items-center gap-5 mr-3">
-            {(["Features", "Pricing", "Docs", "About"] as const).map((l) => (
-              <a
-                key={l}
-                href={`#${l.toLowerCase()}`}
-                onClick={(e) => handleScroll(e, l.toLowerCase())}
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
-              >
-                {l}
-              </a>
-            ))}
-          </div>
+          <SmoothScrollNav
+            items={["Features", "Pricing", "Docs", "About"]}
+            className="hidden md:flex items-center gap-5 mr-3"
+          />
           <Button variant="ghost" size="sm" asChild>
             <Link href="/login">Sign in</Link>
           </Button>
@@ -453,6 +437,24 @@ export function LandingPage() {
         </div>
       </section>
 
+      <section className="px-5 py-14 md:px-12 max-w-5xl mx-auto border-t border-border" aria-label="Customer testimonials">
+        <p className="text-xs text-primary font-semibold uppercase tracking-widest mb-2">Testimonials</p>
+        <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-8">Loved by fans &amp; operations teams.</h2>
+        <figure className="bg-card border border-border rounded-2xl p-6 max-w-2xl">
+          <div className="flex items-center gap-1 text-[#f5c518]" role="img" aria-label="Rated 5 out of 5 stars">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <Star key={i} size={16} className="fill-current" aria-hidden="true" />
+            ))}
+          </div>
+          <blockquote className="text-sm text-foreground leading-relaxed mt-3">
+            &ldquo;The real-time queue times saved me 20 minutes when ordering food during halftime! An absolute game changer for stadiums.&rdquo;
+          </blockquote>
+          <figcaption className="mt-4 text-xs text-muted-foreground">
+            — Sarah Jenkins, Verified Fan
+          </figcaption>
+        </figure>
+      </section>
+
       <section className="px-5 py-16 md:px-12 max-w-5xl mx-auto">
         <div className="bg-foreground dark:bg-card rounded-2xl p-10 text-center border border-border">
           <h2 className="text-2xl font-bold text-background dark:text-foreground mb-3">Transform your stadium.</h2>
@@ -491,16 +493,12 @@ export function LandingPage() {
       <FAQPageSchema
         items={[
           {
-            question: "How do I check live crowd density?",
-            answer: "Go to the operator or security dashboard to see gate occupancy and flow rates."
+            question: "How does the incident logging system work?",
+            answer: "Security personnel dispatch alerts through a prioritized registry. Updates sync via real-time WebSocket feeds."
           },
           {
-            question: "Where can I order food in the stadium?",
-            answer: "Open the Fan Dashboard, go to 'Food', and order from nearby concessions."
-          },
-          {
-            question: "What accessibility features are supported?",
-            answer: "We support screen readers, text scaling, high-contrast layouts, and motion-reduction controls."
+            question: "Can fans access accessibility tools?",
+            answer: "Yes, the accessibility hub manages global settings like screen-reader narration, reduced-motion controls, and layout scaling."
           }
         ]}
       />
@@ -536,12 +534,6 @@ export function LandingPage() {
         authorName="Sarah Jenkins"
         reviewRatingValue={5}
         reviewBody="The real-time queue times saved me 20 minutes when ordering food during halftime! An absolute game changer for stadiums."
-      />
-      <VideoObjectSchema
-        name="StadiumPulse AI Platform Walkthrough"
-        description="Interactive demonstration of real-time crowd routing and dispatch systems."
-        thumbnailUrl={["https://stadiumpulse.ai/og-image.png"]}
-        uploadDate="2026-07-16T12:00:00Z"
       />
     </div>
   );

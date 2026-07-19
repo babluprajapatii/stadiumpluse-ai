@@ -294,9 +294,8 @@ test.describe("Forgot Password Page", () => {
     await page.click('button[type="submit"]');
     // Should show success message or redirect
     await page.waitForTimeout(500);
-    const successMsg = await page.locator("text=/check your email|email sent|reset link/i").first();
-    // Either success shown or page updated
-    await expect(successMsg.or(page.getByRole("heading"))).toBeVisible();
+    // Success state renders a distinct heading
+    await expect(page.getByRole("heading", { name: "Reset Link Generated" })).toBeVisible();
   });
 });
 
@@ -376,7 +375,7 @@ test.describe("Logout Flow", () => {
       await confirmBtn.click();
     }
     // Should redirect to landing page
-    await expect(page).toHaveURL(/^\//);
+    await expect(page).toHaveURL((url) => url.pathname === "/");
   });
 });
 

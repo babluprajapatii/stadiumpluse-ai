@@ -1,11 +1,22 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Bell, Shield, Bot, Calendar, Info, AlertOctagon, User } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { NotificationsService, NotificationItem } from "@/services/notifications";
 import { useAuth } from "@/providers/AuthProvider";
 import { useRouter } from "next/navigation";
+
+const ICON_MAP: Record<NotificationItem["type"], React.ReactElement> = {
+  security:  <Shield      size={13} className="text-blue-500"                           />,
+  ai:        <Bot         size={13} className="text-purple-500"                         />,
+  event:     <Calendar    size={13} className="text-amber-500"                          />,
+  emergency: <AlertOctagon size={13} className="text-destructive animate-pulse"        />,
+  account:   <User        size={13} className="text-green-500"                          />,
+  system:    <Info        size={13} className="text-muted-foreground"                   />,
+};
+
+const getIcon = (type: NotificationItem["type"]) => ICON_MAP[type] ?? ICON_MAP.system;
 
 export function NotificationBell() {
   const { user } = useAuth();
@@ -33,11 +44,16 @@ export function NotificationBell() {
     };
   }, [loadNotifications]);
 
-  if (!user) return null;
+  // Must be before early return to satisfy React hooks rules
+  const { unreadCount, recentNotifications } = useMemo(() => {
+    const unreadList = notifications.filter((n) => !n.isRead);
+    return {
+      unreadCount: unreadList.length,
+      recentNotifications: notifications.slice(0, 5),
+    };
+  }, [notifications]);
 
-  const unreadList = notifications.filter((n) => !n.isRead);
-  const unreadCount = unreadList.length;
-  const recentNotifications = notifications.slice(0, 5);
+  if (!user) return null;
 
   const handleMarkAllRead = () => {
     NotificationsService.markAllAsRead(user.id);
@@ -47,23 +63,6 @@ export function NotificationBell() {
     NotificationsService.markAsRead(user.id, n.id);
     setOpen(false);
     router.push("/notifications");
-  };
-
-  const getIcon = (type: NotificationItem["type"]) => {
-    switch (type) {
-      case "security":
-        return <Shield size={13} className="text-blue-500" />;
-      case "ai":
-        return <Bot size={13} className="text-purple-500" />;
-      case "event":
-        return <Calendar size={13} className="text-amber-500" />;
-      case "emergency":
-        return <AlertOctagon size={13} className="text-destructive animate-pulse" />;
-      case "account":
-        return <User size={13} className="text-green-500" />;
-      default:
-        return <Info size={13} className="text-muted-foreground" />;
-    }
   };
 
   return (

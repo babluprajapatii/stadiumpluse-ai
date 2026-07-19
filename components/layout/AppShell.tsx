@@ -5,11 +5,17 @@ import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 import { ThemeBtn } from "../shared/ThemeBtn";
 import { Sidebar } from "./Sidebar";
-import { EmergencyMode, EmergencyTrigger } from "../emergency-mode";
+import dynamic from "next/dynamic";
+import { EmergencyTrigger } from "../emergency-mode";
 import { useApp } from "@/providers/AppContext";
 import { useAuth } from "@/providers/AuthProvider";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { NotificationBell } from "../shared/NotificationBell";
+
+const EmergencyMode = dynamic(
+  () => import("../emergency-mode").then((mod) => mod.EmergencyMode),
+  { ssr: false }
+);
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
