@@ -12,7 +12,18 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
-      include: ["services/**", "lib/api.ts"],
+      include: [
+        "services/**",
+        "lib/**",
+        "providers/**",
+        "components/shared/**",
+        "components/widgets/**",
+        "components/states.tsx",
+      ],
+      exclude: [
+        "**/*.d.ts",
+        "**/.gitkeep",
+      ],
     },
   },
   resolve: {
