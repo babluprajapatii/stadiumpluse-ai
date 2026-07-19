@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Zap, ArrowRight, CheckCircle, ChevronLeft, Mail, AlertTriangle } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -8,6 +9,7 @@ import { Label } from "../ui/label";
 import { cn, getErrorMessage } from "../ui/utils";
 import type { Navigate } from "@/types";
 import { AuthService, RegisteredUser } from "@/services/auth";
+import { PageSchema } from "../seo/PageSchema";
 
 export function RegisterPage({ navigate }: { navigate: Navigate }) {
   const [role, setRole] = useState("fan");
@@ -110,6 +112,12 @@ export function RegisterPage({ navigate }: { navigate: Navigate }) {
 
   return (
     <main id="main-content" tabIndex={-1} className="min-h-full flex flex-col md:flex-row focus:outline-none">
+      <PageSchema
+        breadcrumbs={[
+          { name: "Home", item: "https://stadiumpulse.ai" },
+          { name: "Register", item: "https://stadiumpulse.ai/register" }
+        ]}
+      />
       {/* Left Panel */}
       <div className="hidden md:flex md:w-1/2 bg-sidebar flex-col items-center justify-center p-12 min-h-full">
         <div className="max-w-xs w-full">
@@ -266,7 +274,7 @@ export function RegisterPage({ navigate }: { navigate: Navigate }) {
                     aria-describedby={validationErrors.terms ? "terms-error" : undefined}
                   />
                   <Label htmlFor="terms" className="text-xs text-muted-foreground leading-normal font-normal cursor-pointer select-none">
-                    I accept the <a href="#" className="text-primary hover:underline">Terms & Conditions</a> and <a href="#" className="text-primary hover:underline">Privacy Policy</a>.
+                    I accept the <Link href="/" title="Terms & Conditions" className="text-primary hover:underline">Terms &amp; Conditions</Link> and <Link href="/" title="Privacy Policy" className="text-primary hover:underline">Privacy Policy</Link>.
                   </Label>
                 </div>
                 {validationErrors.terms && (

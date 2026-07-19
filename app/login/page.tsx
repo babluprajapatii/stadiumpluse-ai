@@ -6,6 +6,7 @@ export const metadata: Metadata = getSeoMetadata({
   title: "Sign In",
   description: "Access your StadiumPulse AI FIFA World Cup 2026 operations portal. Role-based access for fans, organizers, security, and volunteers.",
   canonicalPath: "/login",
+  noIndex: true,
 });
 
 export default function LoginPage() {

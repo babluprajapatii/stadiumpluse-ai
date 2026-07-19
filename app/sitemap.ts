@@ -2,12 +2,23 @@ import { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/seo";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const routes = ["", "/login", "/register", "/forgot-password"].map((route) => ({
-    url: `${SITE_URL}${route}`,
-    lastModified: new Date(),
-    changeFrequency: "daily" as const,
-    priority: route === "" ? 1.0 : 0.8,
-  }));
+  const lastMod = new Date("2026-07-19T22:22:29Z");
+
+  const routes: MetadataRoute.Sitemap = [
+    {
+      url: `${SITE_URL}`,
+      lastModified: lastMod,
+      changeFrequency: "daily",
+      priority: 1.0,
+    },
+    {
+      url: `${SITE_URL}/llms.txt`,
+      lastModified: lastMod,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+  ];
 
   return routes;
 }
+

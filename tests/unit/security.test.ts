@@ -1,5 +1,6 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { signRole, verifyRole } from "@/lib/crypto";
+import { checkRateLimit, clearRateLimitStore } from "@/lib/rate-limit";
 
 const SECRET = "test-secret-key-123456";
 
@@ -40,3 +41,28 @@ describe("Adversarial Security Verification — Session Cookie Signature Protect
     expect(isValid).toBe(false);
   });
 });
+
+describe("Rate Limiting & Anti-Brute Force Protection", () => {
+  beforeEach(() => {
+    clearRateLimitStore();
+  });
+
+  it("allows requests up to specified token limit", () => {
+    const clientIp = "192.168.1.100";
+    for (let i = 0; i < 5; i++) {
+      const res = checkRateLimit(clientIp, { limit: 5, intervalMs: 60000 });
+      expect(res.allowed).toBe(true);
+    }
+  });
+
+  it("blocks requests exceeding the token bucket limit", () => {
+    const clientIp = "192.168.1.101";
+    for (let i = 0; i < 3; i++) {
+      checkRateLimit(clientIp, { limit: 3, intervalMs: 60000 });
+    }
+    const blockedRes = checkRateLimit(clientIp, { limit: 3, intervalMs: 60000 });
+    expect(blockedRes.allowed).toBe(false);
+    expect(blockedRes.remaining).toBe(0);
+  });
+});
+

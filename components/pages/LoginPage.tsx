@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Link from "next/link";
 import { Zap, ArrowRight, CheckCircle, ChevronLeft, AlertTriangle } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -143,16 +144,18 @@ export function LoginPage({ navigate }: { navigate: Navigate }) {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
-                  <a
-                    href="#"
+                  <Link
+                    href="/forgot-password"
                     onClick={(e) => {
-                      e.preventDefault();
-                      navigate("forgot-password" as PageId);
+                      if (navigate) {
+                        e.preventDefault();
+                        navigate("forgot-password" as PageId);
+                      }
                     }}
                     className="text-[11px] text-primary hover:underline"
                   >
                     Forgot password?
-                  </a>
+                  </Link>
                 </div>
                 <Input
                   id="password"
@@ -219,16 +222,18 @@ export function LoginPage({ navigate }: { navigate: Navigate }) {
           </div>
           <p className="text-center text-sm text-muted-foreground">
             {"Don't have an account? "}
-            <a
-              href="#"
+            <Link
+              href="/register"
               className="text-primary font-semibold hover:underline"
               onClick={(e) => {
-                e.preventDefault();
-                navigate("register" as PageId);
+                if (navigate) {
+                  e.preventDefault();
+                  navigate("register" as PageId);
+                }
               }}
             >
               Sign up free
-            </a>
+            </Link>
           </p>
         </div>
       </div>

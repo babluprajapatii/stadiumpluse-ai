@@ -8,6 +8,7 @@ import { Label } from "../ui/label";
 import type { Navigate } from "@/types";
 import { AuthService } from "@/services/auth";
 import { getErrorMessage } from "../ui/utils";
+import { PageSchema } from "../seo/PageSchema";
 
 export function ForgotPasswordPage({ navigate }: { navigate: Navigate }) {
   const [email, setEmail] = useState("");
@@ -42,6 +43,12 @@ export function ForgotPasswordPage({ navigate }: { navigate: Navigate }) {
 
   return (
     <main id="main-content" tabIndex={-1} className="min-h-full flex flex-col md:flex-row focus:outline-none">
+      <PageSchema
+        breadcrumbs={[
+          { name: "Home", item: "https://stadiumpulse.ai" },
+          { name: "Forgot Password", item: "https://stadiumpulse.ai/forgot-password" }
+        ]}
+      />
       {/* Left Panel */}
       <div className="hidden md:flex md:w-1/2 bg-sidebar flex-col items-center justify-center p-12 min-h-full">
         <div className="max-w-xs w-full">

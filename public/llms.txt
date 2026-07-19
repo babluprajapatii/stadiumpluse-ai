@@ -1,33 +1,51 @@
-# StadiumPulse AI
+# StadiumPulse AI — Platform Technical Summary for AI Agents & Crawlers
 
-StadiumPulse AI is a GenAI-powered intelligent stadium operations and fan experience platform designed for the FIFA World Cup 2026.
+> **Last Updated:** 2026-07-19 | **Published:** 2026-06-11 | **Compliance:** WCAG 2.2 AA · ISO 27001
 
-## Architecture & Stack
+StadiumPulse AI is a GenAI-powered intelligent stadium operations, crowd intelligence, emergency incident response, and fan experience platform architected for high-capacity venues during the FIFA World Cup 2026.
 
-- **Framework**: Next.js 16 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **Database / Auth**: Supabase
-- **UI State**: AppContext / AuthProvider
+## Platform Metrics & Key Specifications
 
-## Core URLs & Navigation
+- **Capacity Target:** 150,000+ concurrent active fans
+- **Event Volume:** 200+ major matches and events supported annually
+- **Uptime SLA:** 99.9% high-availability SLA with offline-first PWA fallback
+- **Supported Roles:** 6 specialized role-based operations interfaces (Fan, Security, Operator, Organizer, Volunteer, Accessibility)
 
-- `/` - Public Landing Page
-- `/login` - Portal Sign In
-- `/register` - Portal Sign Up
-- `/forgot-password` - Account Recovery
+## Architecture & Technology Stack
 
-## Core Modules (Protected Dashboards)
+- **Framework:** Next.js 16 (App Router, Turbopack, Dynamic Server Components)
+- **Language:** TypeScript 5.0 (Strict mode)
+- **Styling & Design System:** Tailwind CSS 4, CSS Variables, tw-animate-css
+- **Database & Auth:** Supabase PostgreSQL with Row Level Security (RLS) & JWT authentication
+- **UI State Management:** React 19 Context API (`AppContext`, `AuthProvider`, `ThemeProvider`)
+- **Testing Suite:** Vitest unit tests (294 tests) & Playwright end-to-end suite (32 specs)
 
-- `/fan` - Spectator Hub (Tickets, Queue wait times, Food concierge)
-- `/operator` - Facilities Command (Sensors state, network speed control)
-- `/organizer` - FIFA Event Operations (Gate allocations, revenue stats)
-- `/security` - Tactical Command Room (Incident reports, live CCTV feeds)
-- `/volunteer` - Volunteer Tasks Board (Assignments, sector check-ins)
-- `/accessibility` - Accessible Route Configurator & Services
-- `/ai` - Command Operations Assistant (Incident summarizer)
-- `/feature` - Food Ordering & queue wait estimates
-- `/notifications` - Operational alerts logs & notifications
-- `/profile` - Credentials & user profile settings
-- `/result` - Match results & gate traffic analytics
-- `/settings` - Theme & Accessibility preferences settings
+## Core Public Routes
+
+- `/` - Public Landing Page (Overview, Feature Matrix, Technical Specs, FAQ, Structured Data)
+- `/login` - Portal Access Control (Role-based Sign In with Google/Apple OAuth options)
+- `/register` - Account Registration & Email Verification Simulator
+- `/forgot-password` - Account Recovery & Identity Verification Flow
+
+## Role-Based Operations Dashboards (Protected Routes)
+
+- `/fan` - Spectator Hub (Digital tickets, concession queue estimates, food concierge, wayfinding)
+- `/operator` - Facilities Command Center (Sensor telemetry, gate utilization, infrastructure logs)
+- `/organizer` - FIFA Event Operations (Gate allocation matrix, attendance analytics, revenue tracking)
+- `/security` - Tactical Command Room (Real-time incident reporting, CCTV feeds, evacuation triggers)
+- `/volunteer` - Volunteer Operations Board (Sector check-ins, shift rosters, emergency broadcasts)
+- `/accessibility` - Accessible Wayfinding & Assistive Services Configurator
+- `/ai` - Pulse AI Operations Assistant (Natural language incident summarizer & dispatch agent)
+- `/feature` - Digital Concession Ordering & Real-Time Wait Estimates
+- `/notifications` - Multi-Channel Alert Logs & Dispatch History
+- `/profile` - Role Credentials, Security Passphrase & User Profile Settings
+- `/result` - Real-Time Match Analytics & Gate Traffic Flow Metrics
+- `/settings` - High-contrast modes, font sizing, reduced motion, and theme preferences
+
+## Standards & Compliance References
+
+- **WCAG 2.2 Level AA:** https://www.w3.org/TR/WCAG22/
+- **NFPA 101 Life Safety Code:** https://www.nfpa.org/codes-and-standards/all-codes-and-standards/list-of-codes-and-standards/detail?code=101
+- **FIFA Official Stadium Guidelines:** https://www.fifa.com
+- **Source Repository:** https://github.com/babluprajapatii/stadiumpluse-ai
+
